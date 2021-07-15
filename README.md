@@ -5,7 +5,7 @@
 - The SHWFiles is advanced windows files manager.
 - The compiler is gcc for cross-platform (Mac OS, Linux is not supported yet)
 - SHW is my son's name.
-- License는 GPL v3를 따르고 있습니다.
+- GPL v3 License.
 
 ### 2. Development
 
