@@ -780,6 +780,9 @@ void CListView::Initialize()
 	m_pMyTooltipKeyInput->SetTooltipText(wxT(""));
 	m_pMyTooltipKeyInput->Show(false);
 
+	m_pMyTooltipDetail->SetTooltipText(wxT(""));
+	m_pMyTooltipDetail->Show(false);
+
 	Clear();
 
 	//선택 파일수
@@ -2664,21 +2667,21 @@ void CListView::OnIdle(wxIdleEvent& event)
 		if(dwidle_time > 1500)
 		{
 			CDirData data = m_itemList.at(m_nCurrentItemIndex);
-			int iCurrentPosition = m_nCurrentItemIndex % m_nDisplayItemInView;
+			int iCurrentPosition = m_nCurrentItemIndex - m_nStartIndex;// m_nDisplayItemInView;
 			CPositionInfo posInfo = m_posList.at(iCurrentPosition);
 
 			wxString strDetailInfo(data.GetName());
 			if(strDetailInfo.Cmp(wxT("..")) == 0)
 				return;
 
-			strDetailInfo.append(wxT("\r\n"));
+			strDetailInfo.append(wxT(" | "));
 		#ifdef __WXMSW__
 			if(data.IsDrive())
 			{
 				wxString strDriveName = data.GetDriveName();
 				CDriveItem* pDriveItem = theDriveInfo->GetDriveItem(strDriveName);
 				strDetailInfo = pDriveItem->GetDisplayName();
-				strDetailInfo += wxT("\n");
+				strDetailInfo += wxT(" | ");
 				strDetailInfo += pDriveItem->GetSpace();
 			}
 			else
@@ -2688,17 +2691,17 @@ void CListView::OnIdle(wxIdleEvent& event)
 				{
 					strDetailInfo += theCommonUtil->SetComma(data.GetSize().ToString());
 					strDetailInfo += wxT(" Bytes");
-					strDetailInfo.append(wxT("\r\n"));
+					strDetailInfo.append(wxT(" | "));
 				}
 
 				wxString strAttr = data.GetAttributeToString();
 
 				strDetailInfo.append(strAttr);
-				strDetailInfo.append(wxT("\r\n"));
+				strDetailInfo.append(wxT(" | "));
 
 				wxString strTime = data.GetDateTimeToString();
 				strDetailInfo.append(strTime);
-				strDetailInfo.append(wxT("\r\n"));
+				strDetailInfo.append(wxT(" | "));
 				strDetailInfo.append(data.GetTypeName());
 		#ifdef __WXMSW__
 			}
@@ -2713,12 +2716,17 @@ void CListView::OnIdle(wxIdleEvent& event)
 
 			wxPoint ptTooltip(posInfo.m_nameRect.GetLeft(), posInfo.m_nameRect.GetBottom() + 2);
 
-			szTooltip.SetWidth(sztip.GetWidth() / 2 + 10);
-			szTooltip.SetHeight(sztip.GetHeight() + (data.IsFile() ? 65 : 50));
+			szTooltip.SetWidth(sztip.GetWidth() + 10);
+			szTooltip.SetHeight(sztip.GetHeight() + 5 );//(data.IsFile() ? 65 : 50));
 
-			int iYPos = ptTooltip.y + szTooltip.GetY();
-			if(m_viewRect.GetBottom() < iYPos)
-				ptTooltip.y =  ptTooltip.y - (szTooltip.GetHeight() + posInfo.m_nameRect.GetHeight() + 5);
+			int iXPos = ptTooltip.x + szTooltip.GetWidth();
+			if(m_viewRect.GetRight() < iXPos)
+			{
+				ptTooltip.x -= ((szTooltip.GetWidth() - posInfo.m_nameRect.GetWidth()) + 5);
+
+				if(ptTooltip.x <= 0)
+					ptTooltip.x = posInfo.m_nameRect.GetWidth();
+			}
 
 			m_pMyTooltipDetail->SetTooltipText(strDetailInfo);
 			m_pMyTooltipDetail->SetThemeEnabled(true);

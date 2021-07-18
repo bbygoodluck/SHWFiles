@@ -11,7 +11,7 @@ CCompress* CCompress::Get()
 		m_pInstance.reset(new CCompress());
 		m_pInstance->Init();
 	}
-	
+
 	return m_pInstance.get();
 }
 
@@ -33,7 +33,7 @@ bool CCompress::IsCompressedFile(const wxString& strExt)
 			break;
 		}
 	}
-	
+
 	return bCompressedFile;
 }
 
@@ -41,7 +41,7 @@ bool CCompress::SetCompressInfo(const wxString& strFullPath, const wxString& str
 {
 	std::vector<wxString> vecDatas;
 	vecDatas.emplace_back(strFullPath);
-		
+
 	return SetCompressInfo(vecDatas, strCompressedFile);
 }
 
@@ -50,10 +50,10 @@ bool CCompress::SetCompressInfo(const std::vector<wxString>& vecDatas, const wxS
 	m_bDeCompress = false;
 	m_strCompressedFile = strCompressedFile;
 	m_vecCompressingDatas = vecDatas;
-	
+
 	if(!CreateCompressImpl())
 		return false;
-		
+
 	return true;
 }
 
@@ -64,7 +64,7 @@ bool CCompress::SetUnCompressedInfo(const wxString& strCompressedFile, const wxS
 	m_strDeCompressDir = strDeCompressDir;
 	if(!CreateCompressImpl())
 		return false;
-	
+
 	return true;
 }
 
@@ -79,7 +79,7 @@ bool CCompress::CreateCompressImpl()
 	m_pCompressType = COMPTYPE_NONE;
 	if(theCommonUtil->Compare(strExt, wxT("zip")) == 0)
 		m_pCompressType = m_bDeCompress ? COMPTYPE_UNZIP : COMPTYPE_ZIP;
-	
+
 	if(m_pCompressImpl)
 		return false;
 
@@ -88,31 +88,33 @@ bool CCompress::CreateCompressImpl()
 		case COMPTYPE_ZIP:
 			m_pCompressImpl = new CZipFileImpl();
 			break;
-			
+
 		case COMPTYPE_UNZIP:
 			m_pCompressImpl = new CUnZipFileImpl();
 			break;
 		default:
 			break;
 	}
-	
+
 	if(!m_pCompressImpl)
 		return false;
-		
+
 	return true;
 }
 
-void CCompress::DoStart(wxDialog* pOwnerDlg)
-{	
+bool CCompress::DoStart(wxDialog* pOwnerDlg)
+{
+	bool bRet = true;
 	m_pCompressImpl->SetOwnerDialog(pOwnerDlg);
-	
+
 	if(m_bDeCompress)
 	{
-		m_pCompressImpl->DoDeCompress();
-		return;
+		bRet = m_pCompressImpl->DoDeCompress();
+		return bRet;
 	}
 	//압축하기
-	m_pCompressImpl->DoCompress();
+	bRet = m_pCompressImpl->DoCompress();
+	return bRet;
 }
 //메모리 해제
 void CCompress::ClearCompressInfo()
@@ -125,10 +127,10 @@ void CCompress::ClearCompressInfo()
 	//아직 압축(또는 압축해제) 실행중
 	if(m_pCompressImpl->GetThread() && m_pCompressImpl->GetThread()->IsRunning())
 		m_pCompressImpl->GetThread()->Wait();
-	//메모리 해제	
+	//메모리 해제
 	if(m_pCompressImpl)
 		delete m_pCompressImpl;
-	//초기화	
+	//초기화
 	m_pCompressImpl = nullptr;
 	m_bCancel = false;
 	m_bAllDeCompressSame = false;
