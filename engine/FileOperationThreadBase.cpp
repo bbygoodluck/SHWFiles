@@ -57,24 +57,34 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 
 	wxStructStat fbuf;
 	if (wxStat(strSrc, &fbuf) != 0)
+	{
+		fileIn.Close();
 		return;
+	}
 
 	wxFile fileOut;
 	if (!fileOut.Create(strTgt, IsOverwrite, fbuf.st_mode & 0777))
+	{
+		fileOut.Close();
 		return;
+	}
 
 	unsigned long long ulReadSize = 0;
-	char buf[64 * 1024];
+	char buf[800 * 1024];
 	wxZeroMemory(buf);
 
-	for (; ; )
+	bool bReturn = false;
+	for ( ; ; )
 	{
 		if (theFileOPCheck->IsAllCancel())
 			break;
 
 		ssize_t count = fileIn.Read(buf, WXSIZEOF(buf));
 		if (count == wxInvalidOffset)
-			return;
+		{
+			bReturn = true;
+			break;
+		}
 
 		ulReadSize += count;
 		m_pDialog->SetCurrentFileLength(ulReadSize);
@@ -84,11 +94,17 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 			break;
 
 		if (fileOut.Write(buf, count) < (size_t)count)
-			return;
+		{
+			bReturn = true;
+			break;
+		}
 	}
 
 	fileIn.Close();
 	fileOut.Close();
+
+	if(bReturn)
+		return;
 
 	if (theFileOPCheck->IsAllCancel())
 		return;

@@ -390,10 +390,8 @@ void CLocalFileListView::DoDelete(const wxString& strName)
 
 	m_itemList.erase(iter);
 
-	m_nCurrentItemIndex--;
-
 	m_nTotalItems = wx_static_cast(int, m_itemList.size());
-	if ((m_nTotalItems <= m_nCurrentItemIndex) || (m_nCurrentItemIndex < 0))
+	if(m_nCurrentItemIndex > m_nTotalItems)
 	{
 		m_nStartIndex = 0;
 		m_nCurrentItemIndex = 0;
@@ -491,7 +489,7 @@ void CLocalFileListView::ShowFavoriteMenu()
 		return;
 	}
 
-	int iItemPosition = m_nCurrentItemIndex - m_nStartIndex;// m_nDisplayItemInView;
+	int iItemPosition = m_nCurrentItemIndex - m_nStartIndex;
 	CPositionInfo posInfo = m_posList.at(iItemPosition);
 
 	wxRect rcPos(posInfo.m_nameRect);
@@ -534,14 +532,13 @@ void CLocalFileListView::OnDriveAddOrRemove(wxCommandEvent& event)
 
 void CLocalFileListView::OnUpdateDriveSpace(wxCommandEvent& event)
 {
-//	wxString strDiskName = event.GetString();
 	wxString strDriveName(wxT(""));
 	wxVector<CDirData>::iterator iter = m_itemList.end() - 1;
 
 	for (iter; iter != m_itemList.begin(); --iter)
 	{
-		CDirData* pData = (CDirData *)&(*iter);
-		strDriveName = pData->GetDriveName();
+	//	CDirData* pData = (CDirData *)&(*iter);
+		strDriveName = iter->GetDriveName();
 
 		if (m_strVolume.CmpNoCase(strDriveName) == 0)
 		{
@@ -559,7 +556,7 @@ void CLocalFileListView::OnUpdateDriveSpace(wxCommandEvent& event)
 				wxString strSpace = drvItem->GetSpace();
 				strName += wxT(" - ") + strSpace;
 
-				pData->SetName(strName);
+				iter->SetName(strName);
 			}
 
 			break;

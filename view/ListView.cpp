@@ -2717,7 +2717,7 @@ void CListView::OnIdle(wxIdleEvent& event)
 			wxPoint ptTooltip(posInfo.m_nameRect.GetLeft(), posInfo.m_nameRect.GetBottom() + 2);
 
 			szTooltip.SetWidth(sztip.GetWidth() + 10);
-			szTooltip.SetHeight(sztip.GetHeight() + 5 );//(data.IsFile() ? 65 : 50));
+			szTooltip.SetHeight(sztip.GetHeight() + 5 );
 
 			int iXPos = ptTooltip.x + szTooltip.GetWidth();
 			if(m_viewRect.GetRight() < iXPos)
