@@ -61,7 +61,8 @@ void CLocalFileListView::LoadDir(const wxString& strPath)
 	wxBusyCursor wait;
 
 	TerminateThread();
-	RunReadImageList();
+//	RunReadImageList();
+	ReadyImageListThread();
 
 	Initialize();
 

@@ -55,7 +55,7 @@ DlgDelete::DlgDelete(wxWindow* parent, wxWindowID id, const wxString& title, con
 
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer(wxHORIZONTAL);
-	
+
 	m_btnClose = new wxButton(this, wxID_ANY, theMsgManager->GetMessage(wxT("MSG_DLG_OPTION_BTN_CLOSE")), wxDefaultPosition, wxDefaultSize, 0);
 	bSizer2->Add(m_btnClose, 0, wxALL, 5);
 
@@ -87,22 +87,22 @@ DlgDelete::~DlgDelete()
 
 }
 
-void DlgDelete::OnClose(wxCloseEvent& event) 
-{ 
+void DlgDelete::OnClose(wxCloseEvent& event)
+{
 	if (GetThread()->IsAlive() && GetThread()->IsRunning())
 		GetThread()->Wait();
 
 	Destroy();
 }
 
-void DlgDelete::OnInitialog(wxInitDialogEvent& event) 
-{ 
+void DlgDelete::OnInitialog(wxInitDialogEvent& event)
+{
 	m_bWorking = false;
 	m_bCancelOK = false;
 	m_bStopping = false;
 
 	m_staticDelCnt->SetLabelText(wxT("(0 / 0)"));
-	
+
 	m_staticText1->SetLabelText(theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_COLLECT_DEL_INFO")));
 	if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
 	{
@@ -119,17 +119,17 @@ void DlgDelete::OnInitialog(wxInitDialogEvent& event)
 	m_bWorking = true;
 }
 
-void DlgDelete::OnDlgClose(wxCommandEvent& event) 
-{ 
+void DlgDelete::OnDlgClose(wxCommandEvent& event)
+{
 	EndDialog(wxID_CLOSE);
 }
 
-void DlgDelete::OnDlgCancel(wxCommandEvent& event) 
-{ 
+void DlgDelete::OnDlgCancel(wxCommandEvent& event)
+{
 	if (m_bWorking)
 	{
 		m_bStopping = true;
-		
+
 		int iRetID = wxMessageBox(theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_CANCEL_MSG")), PROGRAM_FULL_NAME, wxYES_NO | wxICON_INFORMATION, this);
 		if (iRetID == wxYES)
 		{
@@ -159,7 +159,6 @@ wxThread::ExitCode DlgDelete::Entry()
 	int iDelCount = 0;
 	if (m_lstDelList.size() > 0)
 	{
-		std::list<wxString>::iterator iter = m_lstDelList.begin();
 		for(auto item : m_lstDelList)
 		{
 			if (m_bStopping)
@@ -187,7 +186,7 @@ wxThread::ExitCode DlgDelete::Entry()
 		if(!m_bStopping && !m_bCancelOK)
 		{
 			m_staticText1->SetLabelText(theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_INFO")));
-			
+
 			for (auto sItem : m_arrSubLst)
 			{
 				if (m_bStopping)
@@ -197,7 +196,7 @@ wxThread::ExitCode DlgDelete::Entry()
 					break;
 
 				m_staticDelItem->SetLabelText(sItem);
-				
+
 				int iRet = 0;
 				bool bDel = CLocalFileSystem::RecursiveDelete(sItem, this, m_bGoTrash, iRet);
 				if (!bDel)
@@ -206,7 +205,7 @@ wxThread::ExitCode DlgDelete::Entry()
 					m_bError = true;
 					break;
 				}
-				
+
 				iDelCount++;
 
 				wxString strDisp = wxString::Format(wxT("(%d / %d)"), iDelCount, iDelTotal);
@@ -279,7 +278,7 @@ int DlgDelete::GetNumberOf_Files_in_Directory(path p)
 			m_staticDelItem->SetLabelText(strPath + theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_COLLECT_DEL_INFO_FOLDER")));
 			continue;
 		}
-		
+
 #else
 #endif
 		m_arrSubLst.Add(strPath);

@@ -678,7 +678,7 @@ void CSHCDView::CalcDispStr(wxDC* pDC, const wxString& strSource, wxString& strO
 {
 	wxString strDisp(wxT(""));
 	wxString strName(strSource);
-	wxSize sizeEllipsis = pDC->GetTextExtent(wxT("..."));
+//	wxSize sizeEllipsis = pDC->GetTextExtent(wxT("..."));
 	wxSize szNameSize = pDC->GetTextExtent(strName);
 
 	int iLenIndex = 0;
@@ -1502,7 +1502,7 @@ void CSHCDView::OnTextCtrlEnter(wxCommandEvent& event)
 void CSHCDView::DoRenameOn(const wxString& strName)
 {
 	wxClientDC dc(this);
-	wxSize szName = dc.GetTextExtent(strName);
+//	wxSize szName = dc.GetTextExtent(strName);
 
 	int iPosX1 = m_pCurrNode->_rect.GetLeft();
 	int iPosY1 = m_pCurrNode->_rect.GetTop() - 1;

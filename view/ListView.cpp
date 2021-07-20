@@ -22,6 +22,7 @@ wxBEGIN_EVENT_TABLE(CListView, wxWindow)
 	EVT_RIGHT_DOWN(CListView::OnMouseRButtonDown)
 	EVT_RIGHT_UP(CListView::OnMouseRButtonUp)
 	EVT_MOTION(CListView::OnMouseMove)
+	EVT_MOUSEWHEEL(CListView::OnMouseWheel)
 	EVT_IDLE(CListView::OnIdle)
 	//Custom Event
 	EVT_MY_CUSTOM_COMMAND(wxEVT_ITEM_RENAME, wxID_ANY, CListView::OnItemRename)
@@ -889,8 +890,7 @@ void CListView::CalcColumn(wxDC* pDC)
 	CalcPosition(pDC);
 	//아이콘 읽기
 	if(m_bDirLoaded)
-		m_lock.getCondition()->Broadcast();
-	//	RunReadImageList();
+		RunReadImageList();
 }
 
 bool CListView::CalcAutoColumn(wxDC* pDC, const wxRect& viewRect)
@@ -1833,24 +1833,33 @@ void CListView::TerminateThread()
 	}
 }
 
-void CListView::RunReadImageList()
+void CListView::ReadyImageListThread()
 {
+	m_bCreateThreadImageList = false;
 	if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
 	{
 		wxLogError("Could not create the worker thread!");
 		return;
 	}
 
-	if (GetThread()->Run() != wxTHREAD_NO_ERROR)
-    {
-        wxLogError("Could not run the worker thread!");
-        return;
-    }
+	m_bCreateThreadImageList = true;
+}
+
+void CListView::RunReadImageList()
+{
+	if(m_bCreateThreadImageList)
+	{
+		if (GetThread()->Run() != wxTHREAD_NO_ERROR)
+		{
+			wxLogError("Could not run the worker thread!");
+			return;
+		}
+	}
 }
 
 wxThread::ExitCode CListView::Entry()
 {
-	m_lock.getCondition()->Wait();
+//	m_lock.getCondition()->Wait();
 	int nPosIndex = 0;
 	int iStartIndex = 0;
 
@@ -2135,6 +2144,28 @@ void CListView::OnMouseRButtonUp(wxMouseEvent& event)
 void CListView::OnMouseMove(wxMouseEvent& event)
 {
 	m_bMouseMoveAndFound = FindItemInMousePoint(event.GetPosition(), true);
+}
+
+void CListView::OnMouseWheel(wxMouseEvent& event)
+{
+	if(!m_bSetFocus)
+		return;
+
+	int iWheelRotation = event.GetWheelRotation();
+	if (iWheelRotation < 0) //Down
+	{
+		m_nCurrentItemIndex++;
+		if(m_nCurrentItemIndex > (m_nTotalItems - 1))
+			m_nCurrentItemIndex = m_nTotalItems - 1;
+	}
+	else //Up
+	{
+		m_nCurrentItemIndex--;
+		if(m_nCurrentItemIndex < 0)
+			m_nCurrentItemIndex = 0;
+	}
+
+	theCommonUtil->RefreshWindow(this, m_viewRect);
 }
 
 void CListView::DoMouseProcess(const wxPoint& pt, bool bDblClick)
@@ -2490,7 +2521,7 @@ bool CListView::GetTrashOrDeleteData(std::list<wxString>& lstDatas, bool bTrash)
 		strMsg += wxT("\n\n");
 
 		wxString strItem(wxT(""));
-		for (iter; iter != m_hashSelectedItem.end(); iter++)
+		for (iter; iter != m_hashSelectedItem.end(); ++iter)
 		{
 			bOpenCheck = false;
 

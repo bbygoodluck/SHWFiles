@@ -113,6 +113,7 @@ protected:
 	bool PressEnterKey();
 
 	void TerminateThread();
+	void ReadyImageListThread();
 	void RunReadImageList();
 
 	void GotoRoot();
@@ -239,6 +240,8 @@ protected:
 	bool m_bContextMenuFromMenuEvent = false;
 	//마우스 이동 후 검색된 아이템
 	bool m_bMouseMoveAndFound = false;
+	//이미지리스트 쓰레드 생성플래그
+	bool m_bCreateThreadImageList = false;
 	// 현재 디렉토리
 	wxString m_strCurrentPath = wxT("");
 	// 가장긴 이름
@@ -302,6 +305,7 @@ private:
 	void OnMouseRButtonDown(wxMouseEvent& event);
 	void OnMouseRButtonUp(wxMouseEvent& event);
 	void OnMouseMove(wxMouseEvent& event);
+	void OnMouseWheel(wxMouseEvent& event);
 
 	//Idle 이벤트
 	void OnIdle(wxIdleEvent& event);
