@@ -70,11 +70,11 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 	}
 
 	unsigned long long ulReadSize = 0;
-	char buf[800 * 1024];
+	char buf[600 * 1024];
 	wxZeroMemory(buf);
 
 	bool bReturn = false;
-	for ( ; ; )
+	while(1)
 	{
 		if (theFileOPCheck->IsAllCancel())
 			break;
@@ -107,7 +107,10 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 		return;
 
 	if (theFileOPCheck->IsAllCancel())
+	{
+		wxRemoveFile(strTgt);
 		return;
+	}
 
 	m_iOperationCount++;
 	m_pDialog->SetTotalOperation(m_iOperationCount);

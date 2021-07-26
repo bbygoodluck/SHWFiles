@@ -93,6 +93,7 @@ void CFileOperationCheck::SetInitialize()
 	m_bAferSameOperation = false;
 	m_bCancel = false;
 	m_bByPass = false;
+	m_bAllCancel = false;
 
 	m_strRename = wxT("");
 }

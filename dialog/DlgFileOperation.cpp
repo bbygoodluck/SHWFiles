@@ -197,9 +197,9 @@ void FileOperationDlg::DoCancel()
 		m_btnCancel->Enable(false);
 
 		theFileOPCheck->SetAllCancel(true);
-		EndDialog(wxID_CLOSE);
-		m_pOpThread->Resume();
 	}
+
+	m_pOpThread->Resume();
 }
 
 void FileOperationDlg::OnBtnClose(wxCommandEvent& event)
@@ -317,12 +317,8 @@ void FileOperationDlg::SetCurrentFileNow(UINT uWorkSoFar)
 
 void FileOperationDlg::OnFileOperationEnd(wxThreadEvent& event)
 {
-	int iNum = event.GetInt();
-	if (iNum == -1)
-	{
-		wxMilliSleep(100);
-		EndDialog(wxID_CLOSE);
-	}
+	wxMilliSleep(100);
+	EndDialog(wxID_CLOSE);
 }
 
 void FileOperationDlg::ShowExistCheckDialog(const wxString& strExistFile, const wxString& strSrc)

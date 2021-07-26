@@ -17,6 +17,8 @@ CMSWFileOperationThread::~CMSWFileOperationThread()
 
 wxThread::ExitCode CMSWFileOperationThread::Entry()
 {
+	theFileOPCheck->SetInitialize();
+
 	wxString strTgt(wxT(""));
 	bool bDir;
 	for(auto strItem : m_lstSrc)
@@ -69,7 +71,7 @@ void CMSWFileOperationThread::SendThreadEndEvent()
 {
 	wxThreadEvent event(wxEVT_THREAD, FILE_OPERATION_THREAD);
 	event.SetInt(-1);
-	wxQueueEvent(m_pDialog, event.Clone());
+	wxPostEvent(m_pDialog, event);
 }
 
 void CMSWFileOperationThread::DoOperationDir(const wxString& strSrc, wxString& strTgt, bool bFirst)
