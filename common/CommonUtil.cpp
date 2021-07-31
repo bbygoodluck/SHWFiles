@@ -91,10 +91,6 @@ void CCommonUtil::LoadImageList()
 	HRESULT res = SHGetImageList(SHIL_SMALL, IID_IImageList2, (void**)& _gImageList);
 	if (FAILED(res))
 		res = SHGetImageList(SHIL_SMALL, IID_IImageList, (void**)& _gImageList);
-
-//	bool bGetImageList = Shell_GetImageLists(nullptr, &_gImageList);
-//	if(!bGetImageList)
-//		wxMessageBox(wxT("Shell_GetImageList function failed"), PROGRAM_FULL_NAME, wxOK | wxICON_ERROR);
 #else
 	_gImageList = wxTheFileIconsTable->GetSmallImageList();
 #endif

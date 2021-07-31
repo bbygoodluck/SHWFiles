@@ -786,6 +786,7 @@ void CListView::Initialize()
 
 	Clear();
 
+	m_iTotalPositionCnt = 0;
 	//선택 파일수
 	m_iSelFileCnt = 0;
 	//선택 디렉토리 수
@@ -1373,19 +1374,22 @@ void CListView::DisplayItems(wxDC* pDC)
 		if (nPosIndex >= m_iTotalPositionCnt)
 			nPosIndex = m_iTotalPositionCnt - 1;
 
-		CDirData itemData = m_itemList.at(nIndex);
+		wxVector<CDirData>::iterator iter = m_itemList.begin() + nIndex;
+
+	//	CDirData itemData = m_itemList.at(nIndex);
+
 		CPositionInfo posInfo = m_posList.at(nPosIndex);
 
-		strSrcName = itemData.GetName();
-		strName = itemData.GetName();
+		strSrcName = iter->GetName();
+		strName = iter->GetName();
 
-		bool isDrive = itemData.IsDrive() ? true : false;
-		bool isDir = itemData.IsDir() ? true : false;
-		bool isFile = itemData.IsFile() ? true : false;
-		bool isCut = itemData.IsCut() ? true : false;
+		bool isDrive = iter->IsDrive() ? true : false;
+		bool isDir = iter->IsDir() ? true : false;
+		bool isFile = iter->IsFile() ? true : false;
+		bool isCut = iter->IsCut() ? true : false;
 
-		bool bSelected = itemData.IsItemSelected();
-		bool bMatched = itemData.IsMatch();
+		bool bSelected = iter->IsItemSelected();
+		bool bMatched = iter->IsMatch();
 
 		//표시 색상
 		if (isDrive)     dispColor = m_colDrive;
@@ -1476,12 +1480,12 @@ void CListView::DisplayItems(wxDC* pDC)
 					pDC->DrawLabel(theMsgManager->GetMessage(wxT("MSG_DIR_FILESIZE_POS")), posInfo.m_sizeRect, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
 				else
 				{
-					wxString strFileSize(itemData.GetSizeString());// (wxT(""));
-					wxString strFileSizeType(itemData.GetSizeTypeString());// (wxT(""));
-					wxColour colorType(itemData.GetSizeColor());// (wxColour(192, 192, 192));
+					wxString strFileSize(iter->GetSizeString());// (wxT(""));
+					wxString strFileSizeType(iter->GetSizeTypeString());// (wxT(""));
+					wxColour colorType(iter->GetSizeColor());// (wxColour(192, 192, 192));
 					wxColour colDispColor;
 
-					if (itemData.GetAttribute() & ATTR_RDONLY)
+					if (iter->GetAttribute() & ATTR_RDONLY)
 					{
 						colDispColor = *wxYELLOW;
 						colorType = *wxYELLOW;
@@ -1505,14 +1509,14 @@ void CListView::DisplayItems(wxDC* pDC)
 			//시간정보
 			if (m_bDispFlag[2])
 			{
-				wxString strTime = itemData.GetDateTimeToString();
+				wxString strTime = iter->GetDateTimeToString();
 				pDC->SetTextForeground(colSelected);
 				pDC->DrawLabel(strTime, posInfo.m_timeRect, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
 			}
 			//속성정보
 			if (m_bDispFlag[3])
 			{
-				wxString strAttr = itemData.GetAttributeToString();
+				wxString strAttr = iter->GetAttributeToString();
 				pDC->SetTextForeground(colSelected);
 				pDC->DrawLabel(strAttr, posInfo.m_attrRect, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
 			}
@@ -1520,7 +1524,7 @@ void CListView::DisplayItems(wxDC* pDC)
 			//type정보
 			if (m_bDispFlag[4])
 			{
-				wxString strDesc = itemData.GetTypeName();
+				wxString strDesc = iter->GetTypeName();
 				pDC->SetTextForeground(m_nCurrentItemIndex == nIndex ? dispColor : m_colType);
 				pDC->DrawLabel(strDesc, posInfo.m_typeNameRect, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
 			}
@@ -1563,25 +1567,25 @@ void CListView::DisplayItems(wxDC* pDC)
 			pDC->SetBrush(wxNullBrush);
 		}
 
-		if (theCommonUtil->Compare(itemData.GetName(), wxT("..")) == 0)
+		if (theCommonUtil->Compare(iter->GetName(), wxT("..")) == 0)
 			pDC->DrawIcon(m_icoUpDir, wxPoint(posInfo.m_iconRect.GetLeft(), posInfo.m_iconRect.GetTop()));
 		else
 		{
-			int iImageFlag = ILD_NORMAL | ILC_MASK; /*| ILD_TRANSPARENT */
+			int iImageFlag = /*ILD_NORMAL | */ ILC_MASK | ILC_COLOR32;
 
-			if (isDir || isFile)
+			if (!isDrive)
 			{
 				if (isCut)
 					iImageFlag |= ILD_BLEND25;
 
-				if (itemData.GetAttribute() & ATTR_HIDDEN)
+				if (iter->GetAttribute() & ATTR_HIDDEN)
 					iImageFlag |= ILD_BLEND25;
 			}
 
 			int iImageX = posInfo.m_iconRect.GetLeft();
 			int iImageY = posInfo.m_iconRect.GetTop();
 
-			DrawItemImage(nIndex, pDC, iImageX, iImageY, iImageFlag);
+			DrawItemImage(pDC, iImageX, iImageY, iImageFlag, iter->m_iIconIndex, iter->m_iOvelayIndex);
 		}
 
 		nPosIndex++;
@@ -1731,6 +1735,8 @@ void CListView::SetDiskSpace()
 
 void CListView::DisplayItemDetailInfo(wxDC* pDC, int iIndex)
 {
+	wxVector<CDirData>::const_iterator iter = m_itemList.begin() + iIndex;
+
 	wxPen pen(wxColour(0, 0, 0));
 	wxBrush brush(wxColour(192, 192, 192));
 
@@ -1743,17 +1749,16 @@ void CListView::DisplayItemDetailInfo(wxDC* pDC, int iIndex)
 
 	pDC->DrawRectangle(m_viewRectDetail);
 
-	int iImageFlag = ILD_NORMAL | ILC_MASK;
-	DrawItemImage(iIndex, pDC, m_viewRectDetail.GetLeft() + 3, m_viewRectDetail.GetTop() + 2, iImageFlag);
+	int iImageFlag = /* ILD_NORMAL | */ ILC_MASK | ILC_COLOR32;
+	DrawItemImage(pDC, m_viewRectDetail.GetLeft() + 3, m_viewRectDetail.GetTop() + 2, iImageFlag, iter->m_iIconIndex, iter->m_iOvelayIndex);
 
-	CDirData data = m_itemList.at(iIndex);
 
-	wxString strDetailInfo = data.GetName();
+	wxString strDetailInfo = iter->GetName();
 	strDetailInfo.append(wxT("  |  "));
 #ifdef __WXMSW__
-	if(data.IsDrive())
+	if(iter->IsDrive())
 	{
-		wxString strDriveName = data.GetDriveName();
+		wxString strDriveName = iter->GetDriveName();
 		CDriveItem* pDriveItem = theDriveInfo->GetDriveItem(strDriveName);
 		strDetailInfo = pDriveItem->GetDisplayName();
 		strDetailInfo += wxT(" ");
@@ -1762,23 +1767,23 @@ void CListView::DisplayItemDetailInfo(wxDC* pDC, int iIndex)
 	else
 	{
 #endif
-		if(data.IsFile())
+		if(iter->IsFile())
 		{
-			strDetailInfo += theCommonUtil->SetComma(data.GetSize().ToString());
+			strDetailInfo += theCommonUtil->SetComma(iter->GetSize().ToString());
 			strDetailInfo += wxT(" Bytes");
 			strDetailInfo.append(wxT("  |  "));
 		}
 
-		wxString strAttr = data.GetAttributeToString();
+		wxString strAttr = iter->GetAttributeToString();
 
 		strDetailInfo.append(strAttr);
 		strDetailInfo.append(wxT("  |  "));
 
 
-		wxString strTime = data.GetDateTimeToString();
+		wxString strTime = iter->GetDateTimeToString();
 		strDetailInfo.append(strTime);
 		strDetailInfo.append(wxT("  |  "));
-		strDetailInfo.append(data.GetTypeName());
+		strDetailInfo.append(iter->GetTypeName());
 #ifdef __WXMSW__
 	}
 #endif
@@ -1789,25 +1794,21 @@ void CListView::DisplayItemDetailInfo(wxDC* pDC, int iIndex)
 	pDC->SetFont(*_gFont);
 }
 
-void CListView::DrawItemImage(int iItemIndex, wxDC* pDC, int x, int y, int flags)
+void CListView::DrawItemImage(wxDC* pDC, int x, int y, int flags, int iIconIndex, int iOverlayIndex)
 {
-	CDirData item = m_itemList.at(iItemIndex);
-	flags |= INDEXTOOVERLAYMASK(item.m_iOvelayIndex + 1);
-
-	m_pImageList->Draw(item.m_iIconIndex, pDC, x, y, flags);
+	flags |= INDEXTOOVERLAYMASK(iOverlayIndex + 1);
+	m_pImageList->Draw(iIconIndex, pDC, x, y, flags);
 }
 
 void CListView::SetItemImage(int iItemIndex)
 {
-	CDirData* pData = (CDirData *)&m_itemList.at(iItemIndex);
-	if(pData->m_bIconImageSet)
+	wxVector<CDirData>::iterator iter = m_itemList.begin() + iItemIndex;
+	bool isDrive = iter->IsDrive();
+	if(isDrive)
 		return;
 
 #ifdef __WXMSW__
-	wxString strFullPath = pData->GetFullPath();
-	bool isDrive = pData->IsDrive();
-	if(isDrive)
-		return;
+	wxString strFullPath = iter->GetFullPath();
 
 	SHFILEINFO sfi;
 	wxZeroMemory(sfi);
@@ -1815,9 +1816,12 @@ void CListView::SetItemImage(int iItemIndex)
 	DWORD dwNum = GetFileAttributes(strFullPath);
 	SHGetFileInfo(strFullPath, dwNum, &sfi, sizeof(sfi), IMAGELIST_FLAG);
 
-	pData->m_iIconIndex = (sfi.iIcon & 0x00FFFFFF);
-	pData->m_iOvelayIndex = (sfi.iIcon >> 24) - 1;
-	pData->m_bIconImageSet = true;
+	int iIconIndex = sfi.iIcon & 0x00FFFFFF;
+	int iOverlay = (sfi.iIcon >> 24) - 1;
+
+	iter->m_iIconIndex = iIconIndex;
+	iter->m_iOvelayIndex = iOverlay;
+	iter->m_bIconImageSet = true;
 
 	DestroyIcon(sfi.hIcon);
 #else
@@ -1859,9 +1863,8 @@ void CListView::RunReadImageList()
 
 wxThread::ExitCode CListView::Entry()
 {
-//	m_lock.getCondition()->Wait();
 	int nPosIndex = 0;
-	int iStartIndex = 0;
+	int iStartIndex = m_nStartIndex;
 
 	for(int i = 0; i < m_nTotalItems; i++)
 	{
@@ -1871,13 +1874,15 @@ wxThread::ExitCode CListView::Entry()
 		SetItemImage(i);
 		//아이콘 표시를 위해 좌표계산이 완료될때까지 기다린다.
 		//화면표시 시작위치가 바뀌게 되었을경우 해당 인덱스까지 올때까지 기다린다.
-		CPositionInfo posInfo = m_posList.at(nPosIndex);
-		theCommonUtil->RefreshWindow(this, posInfo.m_iconRect);
-
-		if((m_iTotalPositionCnt > 0) && (nPosIndex < (m_iTotalPositionCnt - 1)))
-			nPosIndex++;
-		else
-			nPosIndex = 0;
+		if(iStartIndex <= i)
+		{
+			if((m_iTotalPositionCnt > 0) && (nPosIndex < m_iTotalPositionCnt))
+			{
+				CPositionInfo posInfo = m_posList.at(nPosIndex);
+				theCommonUtil->RefreshWindow(this, posInfo.m_iconRect);
+				nPosIndex++;
+			}
+		}
 
 		if(iStartIndex != m_nStartIndex)
 		{

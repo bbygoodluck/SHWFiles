@@ -27,16 +27,39 @@ void CImageList::Attach(HIMAGELIST hImageList)
 	m_bSetHImageList = true;
 	m_hImageList = hImageList;
 }
-#endif
-
+#else
 void CImageList::Attach(wxImageList* pImageList)
 {
 	m_bSetHImageList = false;
 	m_pImageList = pImageList;
 }
+#endif
 
 bool CImageList::Draw(int index, wxDC* pDC, int x, int y, int flags)
 {
+#ifdef __WXMSW__
+	if(!m_hImageList)
+	{
+		wxMessageBox(wxT("HIMAGELIST is null"), PROGRAM_FULL_NAME, wxOK | wxICON_ERROR);
+		return false;
+	}
+
+	HDC hdc = wx_static_cast(HDC, pDC->GetHDC());
+	bool bDraw = ImageList_DrawEx(m_hImageList
+		, index
+		, hdc
+		, x
+		, y
+		, 16
+		, 16
+		, RGB(0, 0, 0)
+		, RGB(0, 0, 0)
+		, flags);
+
+	pDC->ReleaseHDC(hdc);
+	return bDraw;
+//	return ImageList_Draw(m_hImageList, index, pDC->GetHDC(), x, y, flags);
+#else
 	if(!m_bSetHImageList)
 	{
 		if(!m_pImageList)
@@ -48,13 +71,5 @@ bool CImageList::Draw(int index, wxDC* pDC, int x, int y, int flags)
 		return m_pImageList->Draw(index, *pDC, x, y, flags);
 	}
 
-#ifdef __WXMSW__
-	if(!m_hImageList)
-	{
-		wxMessageBox(wxT("HIMAGELIST is null"), PROGRAM_FULL_NAME, wxOK | wxICON_ERROR);
-		return false;
-	}
-
-	return ImageList_Draw(m_hImageList, index, pDC->GetHDC(), x, y, flags);
 #endif // __WXMSW__
 }

@@ -81,6 +81,7 @@ void CLocalFileListView::LoadDir(const wxString& strPath)
 	DoSortStart();
 
 	m_nTotalItems = m_itemList.size();
+
 	if (m_nCurrentItemIndex > m_nTotalItems)
 		m_nCurrentItemIndex = 0;
 

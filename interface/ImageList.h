@@ -12,15 +12,16 @@ public:
 
 #ifdef __WXMSW__
 	void Attach(HIMAGELIST hImageList);
+#else
+	void Attach(wxImageList* pImageList);
 #endif
 
-	void Attach(wxImageList* pImageList);
 private:
 #ifdef __WXMSW__
 	HIMAGELIST m_hImageList = NULL;
-#endif
-
+#else
 	wxImageList* m_pImageList = nullptr;
+#endif
 
 	bool m_bSetHImageList = false;
 };

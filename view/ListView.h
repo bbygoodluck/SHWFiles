@@ -104,7 +104,7 @@ protected:
 	void DisplayItemDetailInfo(wxDC* pDC, int iIndex);
 
 	void SetItemImage(int iItemIndex);
-	void DrawItemImage(int iItemIndex, wxDC* pDC, int x, int y, int flags);
+	void DrawItemImage(wxDC* pDC, int x, int y, int flags, int iIconIndex = 0, int iOverlayIndex = 0);
 
 	virtual void ProcessKeyEvent(const int nKeyCode);
 	void MoveLeftAndUpKey();

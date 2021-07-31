@@ -6,7 +6,7 @@
 		"YPos"                                  : 19,
 		"Width"                                 : 1845,
 		"Height"                                : 990,
-		"SplitWindowStyle"                      : 1,
+		"SplitWindowStyle"                      : 0,
 		"ViewToolBar"                           : 1,
 		"ViewFavoriteBar"                       : 1,
 		"SortType"                              : 0,
