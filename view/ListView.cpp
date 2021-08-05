@@ -758,18 +758,9 @@ void CListView::AllClear()
 
 void CListView::Clear()
 {
-	int iItemCnt = m_itemList.size();
-	int imatchItemCnt = m_matchItems.size();
-
 	m_itemList.clear();
 	m_dispNameInfoMap.clear();
 	m_hashSelectedItem.clear();
-
-	if(iItemCnt == 0 || iItemCnt > 300)
-		m_itemList.reserve(300);
-
-	if(imatchItemCnt == 0 || imatchItemCnt > 100)
-		m_matchItems.reserve(50);
 }
 
 void CListView::Initialize()
@@ -890,8 +881,8 @@ void CListView::CalcColumn(wxDC* pDC)
 	//아이템 표시좌표 계산
 	CalcPosition(pDC);
 	//아이콘 읽기
-	if(m_bDirLoaded)
-		RunReadImageList();
+//	if(m_bDirLoaded)
+//		RunReadImageList();
 }
 
 bool CListView::CalcAutoColumn(wxDC* pDC, const wxRect& viewRect)
@@ -1217,18 +1208,24 @@ void CListView::CalcPosition(wxDC* pDC)
 void CListView::DoSortStart()
 {
 	int iSortType = theJsonConfig->GetSortType();
+	wxVector<CDirData>::const_iterator iter = m_itemList.begin();
+	wxString strName = iter->GetName();
+	int iSortIndex = 0;
+	if(strName.Cmp(wxT("..")) == 0)
+		iSortIndex = 1;
+
 	switch(iSortType)
 	{
 		case VIEW_SORT_DEFAULT:
-			std::sort(m_itemList.begin(), m_itemList.end(), CSorting::DirSortOfName);
+			std::sort(m_itemList.begin() + iSortIndex, m_itemList.end(), CSorting::DirSortOfName);
 			break;
 
 		case VIEW_SORT_TIME:
-			std::sort(m_itemList.begin(), m_itemList.end(), CSorting::DirSortOfTime);
+			std::sort(m_itemList.begin() + iSortIndex, m_itemList.end(), CSorting::DirSortOfTime);
 			break;
 
 		case VIEW_SORT_SIZE:
-			std::sort(m_itemList.begin(), m_itemList.end(), CSorting::DirSortOfSize);
+			std::sort(m_itemList.begin() + iSortIndex, m_itemList.end(), CSorting::DirSortOfSize);
 			break;
 
 		default:
@@ -1571,9 +1568,9 @@ void CListView::DisplayItems(wxDC* pDC)
 			pDC->DrawIcon(m_icoUpDir, wxPoint(posInfo.m_iconRect.GetLeft(), posInfo.m_iconRect.GetTop()));
 		else
 		{
-			int iImageFlag = /*ILD_NORMAL | */ ILC_MASK | ILC_COLOR32;
+			int iImageFlag = ILD_NORMAL | ILC_MASK;
 
-			if (!isDrive)
+			if (isDir || isFile)
 			{
 				if (isCut)
 					iImageFlag |= ILD_BLEND25;
@@ -1749,7 +1746,7 @@ void CListView::DisplayItemDetailInfo(wxDC* pDC, int iIndex)
 
 	pDC->DrawRectangle(m_viewRectDetail);
 
-	int iImageFlag = /* ILD_NORMAL | */ ILC_MASK | ILC_COLOR32;
+	int iImageFlag = ILD_NORMAL | ILC_MASK;
 	DrawItemImage(pDC, m_viewRectDetail.GetLeft() + 3, m_viewRectDetail.GetTop() + 2, iImageFlag, iter->m_iIconIndex, iter->m_iOvelayIndex);
 
 
@@ -1865,13 +1862,14 @@ wxThread::ExitCode CListView::Entry()
 {
 	int nPosIndex = 0;
 	int iStartIndex = m_nStartIndex;
-
+	int iUpdateCount = 0;
 	for(int i = 0; i < m_nTotalItems; i++)
 	{
 		if(m_bImageListThreadStop)
 			break;
 
 		SetItemImage(i);
+
 		//아이콘 표시를 위해 좌표계산이 완료될때까지 기다린다.
 		//화면표시 시작위치가 바뀌게 되었을경우 해당 인덱스까지 올때까지 기다린다.
 		if(iStartIndex <= i)
@@ -1881,6 +1879,7 @@ wxThread::ExitCode CListView::Entry()
 				CPositionInfo posInfo = m_posList.at(nPosIndex);
 				theCommonUtil->RefreshWindow(this, posInfo.m_iconRect);
 				nPosIndex++;
+				iUpdateCount++;
 			}
 		}
 
@@ -1888,6 +1887,15 @@ wxThread::ExitCode CListView::Entry()
 		{
 			iStartIndex = m_nStartIndex;
 			nPosIndex = 0;
+		}
+	}
+
+	if((iUpdateCount != 0) && (iUpdateCount < m_nTotalItems - 1))
+	{
+		for(nPosIndex; nPosIndex < m_nTotalItems -1 ; nPosIndex++)
+		{
+			CPositionInfo posInfo = m_posList.at(nPosIndex);
+			theCommonUtil->RefreshWindow(this, posInfo.m_iconRect);
 		}
 	}
 

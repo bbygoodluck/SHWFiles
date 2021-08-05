@@ -1,7 +1,7 @@
 #ifndef __DIR_DATA_H__
 #define __DIR_DATA_H__
 
-class CDirData final
+class CDirData
 {
 public:
 	CDirData();
@@ -81,10 +81,17 @@ public:
 		return strAttr;
 	}
 
-
 	wxLongLong GetSize() const { return m_llSize; }
+	wxDateTime GetDateTime() const { return m_dt; }
 
 	wxString GetDateTimeToString() const {
+		if(!m_dt.IsValid())
+			return wxT("0000-00-00 00:00");
+
+		wxLongLong llValue = m_dt.GetValue();
+		if(llValue < 0)
+			return wxT("0000-00-00 00:00");
+
 		int iYear = m_dt.GetYear();
 		int iMonth = m_dt.GetMonth() + 1;
 		int iDay = m_dt.GetDay();
@@ -94,35 +101,13 @@ public:
 		return (wxString::Format(TIME_FORMAT_DEFAULT, iYear, iMonth, iDay, iHour, iMin));
 	}
 
-	bool IsDir() const {
-		bool bRet = false;
-		if (m_iType == item_type::dir)
-			bRet = true;
+	bool IsDir() const { return m_isDir; }
+	bool IsFile() const { return m_isFile; }
+	bool IsDrive() const { return m_isDrive; }
 
-		return bRet;
-	}
-
-	bool IsFile() const {
-		bool bRet = false;
-		if (m_iType == item_type::file)
-			bRet = true;
-
-		return bRet;
-	}
-
-	bool IsDrive() const {
-		bool bRet = false;
-		if (m_iType == item_type::drive)
-			bRet = true;
-
-		return bRet;
-	}
-
-
-	const bool IsItemSelected() { return m_bSelected; }
-
-	const int GetIconIndex() { return m_iIcon; }
-	const wxIcon& GetIcon()  { return m_Icon; }
+	const bool IsItemSelected() const { return m_bSelected; }
+	const int GetIconIndex() const { return m_iIcon; }
+	const wxIcon& GetIcon() const { return m_Icon; }
 
 	const wxString& GetDriveName() const { return m_strDriveName; }
 
@@ -141,6 +126,7 @@ public:
 	}
 
 	wxString GetExt() { return m_strExt;}
+
 private:
 	void Init();
 

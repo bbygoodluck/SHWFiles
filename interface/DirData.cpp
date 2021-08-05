@@ -58,6 +58,23 @@ void CDirData::SetPath(const wxString& strPath)
 void CDirData::SetType(item_type iType)
 {
 	m_iType = iType;
+	switch(m_iType)
+	{
+		case item_type::dir:
+			m_isDir = true;
+			break;
+
+		case item_type::file:
+			m_isFile = true;
+			break;
+
+		case item_type::drive:
+			m_isDrive = true;
+			break;
+
+		default:
+			break;
+	}
 }
 
 void CDirData::SetAttribute(unsigned long ulAttr)

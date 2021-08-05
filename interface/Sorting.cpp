@@ -1,8 +1,8 @@
 #include "../ginc.h"
-#include "DirData.h"
 #include "Sorting.h"
 
-CSorting::CSorting()
+CSorting::CSorting(int iSortType)
+	: m_iSortType(iSortType)
 {
 }
 
@@ -10,27 +10,33 @@ CSorting::~CSorting()
 {
 }
 
-bool CSorting::DirSortOfName(CDirData& lhs, CDirData& rhs)
+bool CSorting::DirSortOfName(const CDirData& lhs, const CDirData& rhs)
 {
-	if (lhs.IsDrive())
+#ifdef __WXMSW__
+	bool blhsDrive = lhs.IsDrive();
+	bool brhsDrive = rhs.IsDrive();
+	if (blhsDrive)
 	{
-		if (!rhs.IsDrive())
+		if (!brhsDrive)
 			return false;
 	}
 	else
 	{
-		if (rhs.IsDrive())
+		if (brhsDrive)
 			return true;
 	}
+#endif // __WXMSW__
+	bool blhsDir = lhs.IsDir();
+	bool brhsDir = rhs.IsDir();
 
-	int iRes = CmpDir(lhs, rhs);
+	int iRes = CmpDir(blhsDir, brhsDir);
 	if (iRes < 0)
 		return true;
 	else if (iRes > 0)
 		return false;
 
-	wxString strLName(lhs.GetName());
-	wxString strRName(rhs.GetName());
+	wxString strLName = lhs.GetName();
+	wxString strRName = rhs.GetName();
 
 	iRes = CmpName(strLName, strRName);
 
@@ -40,71 +46,64 @@ bool CSorting::DirSortOfName(CDirData& lhs, CDirData& rhs)
 		return false;
 }
 
-bool CSorting::DirSortOfSize(CDirData& lhs, CDirData& rhs)
+bool CSorting::DirSortOfSize(const CDirData& lhs, const CDirData& rhs)
 {
-	if (lhs.IsDrive())
+#ifdef __WXMSW__
+	bool blhsDrive = lhs.IsDrive();
+	bool brhsDrive = rhs.IsDrive();
+	if (blhsDrive)
 	{
-		if (!rhs.IsDrive())
+		if (!brhsDrive)
 			return false;
 	}
 	else
 	{
-		if (rhs.IsDrive())
+		if (brhsDrive)
 			return true;
 	}
+#endif // __WXMSW__
 
-	wxString strLeftSize = lhs.GetSizeString();
-	wxString strRightSize = rhs.GetSizeString();
+	wxLongLong lllhs = lhs.GetSize();
+	wxLongLong llrhs = rhs.GetSize();
 
-	int iRes = CmpName(strLeftSize, strRightSize);
-
-	if (iRes < 0)
-		return false;
-	else
-		return true;
+	return lllhs.GetValue() > llrhs.GetValue();
 }
 
-bool CSorting::DirSortOfTime(CDirData& lhs, CDirData& rhs)
+bool CSorting::DirSortOfTime(const CDirData& lhs, const CDirData& rhs)
 {
-	if (lhs.IsDrive())
+#ifdef __WXMSW__
+	bool blhsDrive = lhs.IsDrive();
+	bool brhsDrive = rhs.IsDrive();
+	if (blhsDrive)
 	{
-		if (!rhs.IsDrive())
+		if (!brhsDrive)
 			return false;
 	}
 	else
 	{
-		if (rhs.IsDrive())
+		if (brhsDrive)
 			return true;
 	}
+#endif // __WXMSW__
 
-	wxString strLName(lhs.GetDateTimeToString());
-	wxString strRName(rhs.GetDateTimeToString());
+	wxDateTime dtlhs = lhs.GetDateTime();
+	wxDateTime dtrhs = rhs.GetDateTime();
 
-	int iRes = CmpName(strLName, strRName);
-
-	if (iRes < 0)
-		return false;
-	else
-		return true;
+	return dtlhs > dtrhs;
 }
 
-bool CSorting::DirSortOfType(CDirData& lhs, CDirData& rhs)
+int CSorting::CmpDir(bool blhsDir, bool brhsDir)
 {
-	return false;
-}
-
-int CSorting::CmpDir(CDirData& lhs, CDirData& rhs)
-{
-	if (lhs.IsDir())
+	if (blhsDir)
 	{
-		if (!rhs.IsDir())
+		if (!brhsDir)
 			return -1;
 		else
 			return 0;
 	}
 	else
 	{
-		if (rhs.IsDir())
+		if (brhsDir)
 			return 1;
 		else
 			return 0;
@@ -117,12 +116,5 @@ int CSorting::CmpName(const wxString& strLeft, const wxString& strRight)
 	wxString strRName(strRight);
 
 	int cmp = strLName.CmpNoCase(strRName);
-
-	if (strLName.Cmp(wxT("..")) == 0)
-		return -1;
-	else if (strRName.Cmp(wxT("..")) == 0)
-		return 1;
-	else
-		return cmp;
-
+	return cmp;
 }

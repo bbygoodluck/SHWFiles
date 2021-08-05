@@ -82,6 +82,8 @@ void CLocalFileListView::LoadDir(const wxString& strPath)
 
 	m_nTotalItems = m_itemList.size();
 
+	RunReadImageList();
+
 	if (m_nCurrentItemIndex > m_nTotalItems)
 		m_nCurrentItemIndex = 0;
 
@@ -217,6 +219,7 @@ void CLocalFileListView::AddDrive()
 
 		dirItem.SetName(strName);
 		dirItem.SetDriveName(drvItem->GetDriveName());
+		dirItem.SetSize(0);
 		dirItem.SetType(CDirData::item_type::drive);
 		dirItem.m_iIconIndex = drvItem->GetIconIndex();
 		dirItem.m_iOvelayIndex = drvItem->GetOverlayIconIndex();
