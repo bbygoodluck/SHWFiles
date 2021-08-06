@@ -93,7 +93,7 @@ protected:
 	void DrawDirInfoArea(wxDC* pDC);
 	void SetDiskSpace();
 
-	void DoSortStart();
+	void DoSortStart(bool bSetDrive = false);
 	void ReCalcPage();
 
 	wxString CalcDispStr(wxDC* pDC, const wxString& strSourceSave, const wxString& strSource, bool isDrive);

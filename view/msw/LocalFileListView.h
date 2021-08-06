@@ -26,6 +26,7 @@ protected:
 private:
 	bool ReadDirectory();
 	void AddDrive();
+	void RemoveDrive();
 
 private:
 	std::unique_ptr<CLocalFileSystemWatcher> m_pFileSystemWatcher;

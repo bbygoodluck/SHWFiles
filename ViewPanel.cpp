@@ -162,7 +162,7 @@ void CViewPanel::ChangeViewColumn()
 
 void CViewPanel::ChangeSort()
 {
-	m_pFileListView->DoSortStart();
+	m_pFileListView->DoSortStart(true);
 	theCommonUtil->RefreshWindow(m_pFileListView.get(), m_pFileListView->m_viewRect);
 }
 

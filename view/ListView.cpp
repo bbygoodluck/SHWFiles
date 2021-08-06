@@ -1205,27 +1205,33 @@ void CListView::CalcPosition(wxDC* pDC)
 	m_iTotalPositionCnt = m_posList.size();
 }
 
-void CListView::DoSortStart()
+void CListView::DoSortStart(bool bSetDrive)
 {
 	int iSortType = theJsonConfig->GetSortType();
 	wxVector<CDirData>::const_iterator iter = m_itemList.begin();
 	wxString strName = iter->GetName();
-	int iSortIndex = 0;
-	if(strName.Cmp(wxT("..")) == 0)
-		iSortIndex = 1;
+	int iSortStartIndex = 0;
+	int iSortEndIndex = 0;
 
+	if(strName.Cmp(wxT("..")) == 0)
+		iSortStartIndex = 1;
+
+#ifdef __WXMSW__
+	if(bSetDrive)
+		iSortEndIndex = theDriveInfo->GetDriveCount();
+#endif // __WXMSW__
 	switch(iSortType)
 	{
 		case VIEW_SORT_DEFAULT:
-			std::sort(m_itemList.begin() + iSortIndex, m_itemList.end(), CSorting::DirSortOfName);
+			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end() - iSortEndIndex, CSorting::DirSortOfName);
 			break;
 
 		case VIEW_SORT_TIME:
-			std::sort(m_itemList.begin() + iSortIndex, m_itemList.end(), CSorting::DirSortOfTime);
+			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end() - iSortEndIndex, CSorting::DirSortOfTime);
 			break;
 
 		case VIEW_SORT_SIZE:
-			std::sort(m_itemList.begin() + iSortIndex, m_itemList.end(), CSorting::DirSortOfSize);
+			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end() - iSortEndIndex, CSorting::DirSortOfSize);
 			break;
 
 		default:
@@ -1862,7 +1868,7 @@ wxThread::ExitCode CListView::Entry()
 {
 	int nPosIndex = 0;
 	int iStartIndex = m_nStartIndex;
-	int iUpdateCount = 0;
+
 	for(int i = 0; i < m_nTotalItems; i++)
 	{
 		if(m_bImageListThreadStop)
@@ -1879,7 +1885,6 @@ wxThread::ExitCode CListView::Entry()
 				CPositionInfo posInfo = m_posList.at(nPosIndex);
 				theCommonUtil->RefreshWindow(this, posInfo.m_iconRect);
 				nPosIndex++;
-				iUpdateCount++;
 			}
 		}
 
@@ -1887,15 +1892,6 @@ wxThread::ExitCode CListView::Entry()
 		{
 			iStartIndex = m_nStartIndex;
 			nPosIndex = 0;
-		}
-	}
-
-	if((iUpdateCount != 0) && (iUpdateCount < m_nTotalItems - 1))
-	{
-		for(nPosIndex; nPosIndex < m_nTotalItems -1 ; nPosIndex++)
-		{
-			CPositionInfo posInfo = m_posList.at(nPosIndex);
-			theCommonUtil->RefreshWindow(this, posInfo.m_iconRect);
 		}
 	}
 

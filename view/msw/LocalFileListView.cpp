@@ -77,11 +77,10 @@ void CLocalFileListView::LoadDir(const wxString& strPath)
 	if (!ReadDirectory())
 		return;
 
-	AddDrive();
 	DoSortStart();
 
+	AddDrive();
 	m_nTotalItems = m_itemList.size();
-
 	RunReadImageList();
 
 	if (m_nCurrentItemIndex > m_nTotalItems)
@@ -284,6 +283,8 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 		}
 	}
 
+	RemoveDrive();
+
 	wxString strExt(wxT(""));
 	wxString strDesc(wxT(""));
 
@@ -327,9 +328,13 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 	SetItemImage(m_nTotalItems - 1);
 
 	DoSortStart();
+	AddDrive();
+
+	m_nTotalItems = wx_static_cast(int, m_itemList.size());
 
 	UpdateLastAccessTime(wxDateTime::Now());
 	m_bSizeOrColumnChanged = true;
+
 	theCommonUtil->RefreshWindow(this, m_viewRect);
 }
 
@@ -356,6 +361,10 @@ void CLocalFileListView::DoModify(const wxString& strName)
 	if(iter == m_itemList.end())
 		return;
 
+	int iSortType = theJsonConfig->GetSortType();
+	if(iSortType == VIEW_SORT_SIZE)
+		RemoveDrive();
+
 	if(iter->IsFile())
 	{
 		m_dblFileSizeInDir -= iter->GetSize().ToDouble();
@@ -365,6 +374,12 @@ void CLocalFileListView::DoModify(const wxString& strName)
 	iter->SetAttribute(lattr);
 	iter->SetSize(llSize);
 	iter->SetDateTime(dt);
+
+	if(iSortType == VIEW_SORT_SIZE)
+	{
+		DoSortStart();
+		AddDrive();
+	}
 
 	UpdateLastAccessTime(wxDateTime::Now());
 	theCommonUtil->RefreshWindow(this, m_viewRect);
@@ -443,6 +458,8 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 	if(iterNew != m_itemList.end())
 		m_itemList.erase(iterNew);
 
+	RemoveDrive();
+
 	CDirData dirItem;
 	dirItem.SetName(strNewName);
 	wxString strDesc(wxT(""));
@@ -476,6 +493,9 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 	SetItemImage(m_nTotalItems - 1);
 
 	DoSortStart();
+	AddDrive();
+
+	m_nTotalItems = wx_static_cast(int, m_itemList.size());
 
 	m_strMaxName = FindMaxData(strNewName, m_strMaxName);
 	m_strMaxTypeName = FindMaxData(strDesc, m_strMaxTypeName);
@@ -514,8 +534,20 @@ void CLocalFileListView::ShowFavoriteMenu()
 	this->PopupMenu(&menuFavorite, pt);
 }
 
-#ifdef __WXMSW__
 void CLocalFileListView::OnDriveAddOrRemove(wxCommandEvent& event)
+{
+	RemoveDrive();
+	AddDrive();
+
+	m_nTotalItems = m_itemList.size();
+
+	ReCalcPage();
+
+	m_bSizeOrColumnChanged = true;
+	theCommonUtil->RefreshWindow(this, m_viewRect);
+}
+
+void CLocalFileListView::RemoveDrive()
 {
 	wxVector<CDirData>::iterator iter = m_itemList.end() - 1;
 	for (iter; iter != m_itemList.begin(); --iter)
@@ -525,14 +557,6 @@ void CLocalFileListView::OnDriveAddOrRemove(wxCommandEvent& event)
 
 		m_itemList.pop_back();
 	}
-
-	AddDrive();
-	m_nTotalItems = m_itemList.size();
-
-	ReCalcPage();
-
-	m_bSizeOrColumnChanged = true;
-	theCommonUtil->RefreshWindow(this, m_viewRect);
 }
 
 void CLocalFileListView::OnUpdateDriveSpace(wxCommandEvent& event)
@@ -568,5 +592,3 @@ void CLocalFileListView::OnUpdateDriveSpace(wxCommandEvent& event)
 		}
 	}
 }
-#endif
-

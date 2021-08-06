@@ -12,20 +12,6 @@ CSorting::~CSorting()
 
 bool CSorting::DirSortOfName(const CDirData& lhs, const CDirData& rhs)
 {
-#ifdef __WXMSW__
-	bool blhsDrive = lhs.IsDrive();
-	bool brhsDrive = rhs.IsDrive();
-	if (blhsDrive)
-	{
-		if (!brhsDrive)
-			return false;
-	}
-	else
-	{
-		if (brhsDrive)
-			return true;
-	}
-#endif // __WXMSW__
 	bool blhsDir = lhs.IsDir();
 	bool brhsDir = rhs.IsDir();
 
@@ -48,21 +34,6 @@ bool CSorting::DirSortOfName(const CDirData& lhs, const CDirData& rhs)
 
 bool CSorting::DirSortOfSize(const CDirData& lhs, const CDirData& rhs)
 {
-#ifdef __WXMSW__
-	bool blhsDrive = lhs.IsDrive();
-	bool brhsDrive = rhs.IsDrive();
-	if (blhsDrive)
-	{
-		if (!brhsDrive)
-			return false;
-	}
-	else
-	{
-		if (brhsDrive)
-			return true;
-	}
-#endif // __WXMSW__
-
 	wxLongLong lllhs = lhs.GetSize();
 	wxLongLong llrhs = rhs.GetSize();
 
@@ -71,21 +42,6 @@ bool CSorting::DirSortOfSize(const CDirData& lhs, const CDirData& rhs)
 
 bool CSorting::DirSortOfTime(const CDirData& lhs, const CDirData& rhs)
 {
-#ifdef __WXMSW__
-	bool blhsDrive = lhs.IsDrive();
-	bool brhsDrive = rhs.IsDrive();
-	if (blhsDrive)
-	{
-		if (!brhsDrive)
-			return false;
-	}
-	else
-	{
-		if (brhsDrive)
-			return true;
-	}
-#endif // __WXMSW__
-
 	wxDateTime dtlhs = lhs.GetDateTime();
 	wxDateTime dtrhs = rhs.GetDateTime();
 
