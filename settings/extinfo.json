@@ -1,20 +1,2 @@
 {
-    "LOG": "텍스트 문서",
-    "DLL": "응용 프로그램 확장",
-    "TMP": "TMP 파일",
-    "BAT": "Windows 배치 파일",
-    "DOCX": "Microsoft Word 문서",
-    "SQL": "SQL 파일",
-    "TXT": "텍스트 문서",
-    "XLSX": "Microsoft Excel 워크시트",
-    "URL": "인터넷 바로 가기",
-    "REGISTRY": "REGISTRY 파일",
-    "EXE": "응용 프로그램",
-    "DAT": "DAT 파일",
-    "INI": "구성 설정",
-    "XML": "XML 문서",
-    "BIN": "BIN 파일",
-    "PRX": "PRX 파일",
-    "C:END": "파일",
-    "END": "파일"
 }

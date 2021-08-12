@@ -217,6 +217,9 @@ protected:
 	int m_iMouseMoveFoundIndx = 0;
 	//히스토리 최대 카운터
 	int	m_nMaxHistoryCount    = 300;
+#ifdef __WXMSW__
+	int m_nMaxWidthOfDrive = 0;
+#endif // __WXMSW__
 	//폴더 사이즈
 	double m_dblFileSizeInDir = 0.0;
 	//디스크 전체 사이즈
@@ -258,7 +261,9 @@ protected:
 	wxString m_strTotalSpace = wxT("");
 	wxString m_strFreeSpace = wxT("");
 	wxString m_strDispDiskSpace = wxT("");
-
+#ifdef __WXMSW__
+	wxString m_strMaxDriveName = wxT("");
+#endif // __WXMSW__
 	COLUMN_VIEW_OPTION m_enumColumnViewOption;
 	//디렉토리방문이력
 	_HISTORY m_hashHistory;

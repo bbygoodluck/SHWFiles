@@ -36,6 +36,8 @@ public:
 	void SetIcon(const wxIcon& ico);
 	//드라이브 이름설정
 	void SetDriveName(const wxString& strDriveName);
+	//드라이브 용량정보
+	void SetDriveSpaceInfo(const wxString& strDriveSpaceInfo);
 	void SetMatch(bool isMatch) {
 		m_bMatched = isMatch;
 	}
@@ -55,6 +57,8 @@ public:
 	const wxString& GetPath() const { return m_strPath; }
 	//타입명 가져오기
 	const wxString& GetTypeName() const { return m_strTypeName; }
+	//드라이브 정보 가져오기
+	const wxString& GetDriveSpaceInfo() const { return m_strDriveSpace; }
 	//전체경로가져오기
 	const wxString GetFullPath();
 	const item_type GetType() { return m_iType; }
@@ -126,6 +130,7 @@ public:
 	}
 
 	wxString GetExt() { return m_strExt;}
+	size_t GetByteCount();
 
 private:
 	void Init();
@@ -141,7 +146,8 @@ private:
 	wxString m_strDisp;
 	//타입설명
 	wxString m_strTypeName;
-
+	//드라이브 용량정보
+	wxString m_strDriveSpace;
 	//폴더플래그
 	bool m_isDir;
 	//파일플래그
@@ -160,6 +166,8 @@ private:
 	unsigned long m_ulattr;
 	//아이콘 인덱스
 	int m_iIcon;
+	//드라이브 문자바이트수
+	int m_iByteCount;
 	//사이즈
 	wxLongLong m_llSize;
 	//시간

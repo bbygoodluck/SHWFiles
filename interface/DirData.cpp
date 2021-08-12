@@ -7,6 +7,7 @@ CDirData::CDirData()
 	, m_strPath(wxT(""))
 	, m_strDriveName(wxT(""))
 	, m_strDisp(wxT(""))
+	, m_strDriveSpace(wxT(""))
 	, m_isDir(false)
 	, m_isFile(false)
 	, m_isDrive(false)
@@ -17,6 +18,7 @@ CDirData::CDirData()
 	, m_ulattr(999999999)
 	, m_llSize(0)
 	, m_iIcon(-1)
+	, m_iByteCount(0)
 	, m_dt(0.0)
 	, m_iType(item_type::unknown)
 
@@ -33,6 +35,7 @@ void CDirData::Init()
 	m_strName		= wxT("");
 	m_strPath		= wxT("");
 	m_strDriveName	= wxT("");
+	m_strDriveSpace = wxT("");
 	m_isDir			= false;
 	m_isFile		= false;
 	m_isDrive		= false;
@@ -43,6 +46,7 @@ void CDirData::Init()
 	m_dt			= 0.0;
 	m_iType			= item_type::unknown;
 	m_iIcon			= -1;
+	m_iByteCount    = 0;
 }
 
 void CDirData::SetName(const wxString& strName)
@@ -57,15 +61,18 @@ void CDirData::SetPath(const wxString& strPath)
 
 void CDirData::SetType(item_type iType)
 {
+	m_iOvelayIndex = -1;
 	m_iType = iType;
 	switch(m_iType)
 	{
 		case item_type::dir:
 			m_isDir = true;
+			m_iIconIndex = 3;
 			break;
 
 		case item_type::file:
 			m_isFile = true;
+			m_iIconIndex = 0;
 			break;
 
 		case item_type::drive:
@@ -122,6 +129,11 @@ void CDirData::SetDriveName(const wxString& strDriveName)
 	m_strDriveName = strDriveName;
 }
 
+void CDirData::SetDriveSpaceInfo(const wxString& strDriveSpaceInfo)
+{
+	m_strDriveSpace = strDriveSpaceInfo;
+}
+
 void CDirData::SetDisp(const wxString& strDisp)
 {
 	m_strDisp = strDisp;
@@ -136,3 +148,9 @@ const wxString CDirData::GetFullPath()
 {
 	return ((theCommonUtil->Compare(SLASH, m_strPath.Right(1)) == 0) ? m_strPath + m_strName :  m_strPath + SLASH + m_strName);
 }
+
+size_t CDirData::GetByteCount()
+{
+	return strlen(m_strName);
+}
+

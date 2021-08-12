@@ -35,8 +35,8 @@
 		"SelectSCDItem_toparent"                : 0,
 		"fontname"                              : "Fixedsys",
 		"fontsize"                              : 10,
-		"LeftPath"                              : "D:\\",
-		"RightPath"                             : "F:\\",
+		"LeftPath"                              : "C:\\",
+		"RightPath"                             : "C:\\",
 		"FileEditProgram": [
             {
                 "name": "Notepad++",

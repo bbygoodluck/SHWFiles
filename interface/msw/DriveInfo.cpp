@@ -47,6 +47,13 @@ void CDriveInfo::Init()
 				bool isNetDrive = (fskind == wxFS_VOL_NETWORK) ? true : false;
 				strDetailInfo = GetMakeDisplayName(fsv.GetDisplayName(), isNetDrive);
 
+				size_t szT = strlen(strDetailInfo);
+				if(m_iMaxByteCount < szT)
+				{
+					m_iMaxByteCount = szT;
+					m_strMaxDriveInfo = strDetailInfo;
+				}
+
 				std::unique_ptr<CDriveItem> drvItem(new CDriveItem());
 
 				drvItem->SetDriveName(strDrvName);

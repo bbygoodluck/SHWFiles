@@ -10,13 +10,13 @@ public:
 public:
 	void SetDriveName(const wxString& strDriveName) { m_strDriveName = strDriveName; }
 	const wxString& GetDriveName() { return m_strDriveName; }
-	
+
 	void SetDisplayName(const wxString& strDispName) { m_strDisplayName = strDispName; }
 	const wxString& GetDisplayName() { return m_strDisplayName; }
-	
+
 	void SetSpace(const wxString& strSpace) { m_strSpace = strSpace; }
 	wxString GetSpace() { return m_strSpace; }
-	
+
 	void SetTypeName(const wxString& strTypeName) { m_strTypeName = strTypeName; }
 	const wxString& GetTypeName() { return m_strTypeName; }
 
@@ -41,7 +41,7 @@ private:
 	wxString m_strSpace         = wxT("");
 	wxString m_strTypeName      = wxT("");
 	wxString m_strDisplayEtc    = wxT("");
-	
+
 	int m_iDriveType = wxFS_VOL_MAX;
 	bool m_bNetDrive = false;
 	int m_iIconIndex = -1;
@@ -51,7 +51,7 @@ private:
 class CDriveInfo
 {
 private:
-	CDriveInfo() 
+	CDriveInfo()
 		: m_nDriveCount(0)
 		, m_strType(wxT(""))
 	{
@@ -76,7 +76,7 @@ public:
 
 	wxString GetDisplayName(int iIndex);
 	wxString GetDisplayName(const wxString& strDriveName);
-	
+
 	wxString GetSpace(const wxString& strDriveName);
 	wxString GetEtcInfo(const wxString& strDriveName);
 
@@ -89,17 +89,21 @@ public:
 	void UpdateSpace(const wxString& strDriveName);
 	void SetIconIndex(const wxString& strDriveName, int& iIconIndex, int& iOverlayIconIndex);
 
+	size_t GetMaxByteCount() const { return m_iMaxByteCount; }
+	wxString GetMaxDriveName() const { return m_strMaxDriveInfo; }
 private:
 	wxString GetMakeDisplayName(const wxString& strDisplayName, bool IsNet = false);
 
 private:
 	static std::unique_ptr<CDriveInfo> m_pInstance;
-	
+
 	std::unordered_map<wxString, CDriveItem> m_driveItems;
 	std::vector<std::unique_ptr<CDriveItem>> m_drive;
 
 	int m_nDriveCount;
+	size_t m_iMaxByteCount = 0;
 	wxString m_strType;
 	wxString m_strEtcDisplay;
+	wxString m_strMaxDriveInfo = wxT("");
 };
 #endif

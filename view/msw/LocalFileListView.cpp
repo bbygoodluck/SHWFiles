@@ -200,7 +200,10 @@ void CLocalFileListView::AddDrive()
 	wxString strDetailInfo(wxT(""));
 	//드라이브 정보 적재
 	int iDriveCount = theDriveInfo->GetDriveCount();
-	wxString strName = wxT("");
+	wxString strName(wxT(""));
+	wxString strDrivespaceInfo(wxT(""));
+
+	m_strMaxDriveName = theDriveInfo->GetMaxDriveName();
 
 	for (int iIndex = 0; iIndex < iDriveCount; iIndex++)
 	{
@@ -211,13 +214,14 @@ void CLocalFileListView::AddDrive()
 		int iDriveType = drvItem->GetDriveType();
 
 		strName = drvItem->GetDisplayName();
-
-		if ((iDriveType != wxFS_VOL_CDROM) &&
-			(iDriveType != wxFS_VOL_DVDROM))
-			strName += wxT(" - ") + drvItem->GetSpace();
+		strDrivespaceInfo = drvItem->GetSpace();
+//		if ((iDriveType != wxFS_VOL_CDROM) &&
+//			(iDriveType != wxFS_VOL_DVDROM))
+//			strName += wxT(" - ") + drvItem->GetSpace();
 
 		dirItem.SetName(strName);
 		dirItem.SetDriveName(drvItem->GetDriveName());
+		dirItem.SetDriveSpaceInfo(strDrivespaceInfo);
 		dirItem.SetSize(0);
 		dirItem.SetType(CDirData::item_type::drive);
 		dirItem.m_iIconIndex = drvItem->GetIconIndex();
@@ -566,26 +570,21 @@ void CLocalFileListView::OnUpdateDriveSpace(wxCommandEvent& event)
 
 	for (iter; iter != m_itemList.begin(); --iter)
 	{
-	//	CDirData* pData = (CDirData *)&(*iter);
 		strDriveName = iter->GetDriveName();
 
 		if (m_strVolume.CmpNoCase(strDriveName) == 0)
 		{
 			CDriveItem* drvItem;
-			wxString strName;
 			int iDriveType;
 
 			drvItem = theDriveInfo->GetDriveItem(m_strVolume);
-			strName = drvItem->GetDisplayName();
 			iDriveType = drvItem->GetDriveType();
 
 			if ((iDriveType != wxFS_VOL_CDROM) &&
 				(iDriveType != wxFS_VOL_DVDROM))
 			{
 				wxString strSpace = drvItem->GetSpace();
-				strName += wxT(" - ") + strSpace;
-
-				iter->SetName(strName);
+				iter->SetDriveSpaceInfo(strSpace);
 			}
 
 			break;

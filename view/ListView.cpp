@@ -209,14 +209,17 @@ void CListView::OnChar(wxKeyEvent& event)
 	wxString strKeyName(theCommonUtil->GetKeyName(event));
 	if(bShift)
 	{
-		wxString strTmp(strKeyName);
-		strTmp += wxT(":");
-		strTmp += SLASH;
-
 		if (theJsonConfig->IsShift_IME_KOR_MoveDrive())
 		{
-			if (theDriveInfo->IsExistDrive(strTmp))
+			wxString strDrive = wxString(strKeyName).MakeUpper();
+			strDrive += wxT(":");
+			strDrive += SLASH;
+
+			if (theDriveInfo->IsExistDrive(strDrive))
+			{
+				event.Skip();
 				return;
+			}
 		}
 	}
 
@@ -1042,20 +1045,20 @@ void CListView::CalcPosition(wxDC* pDC)
 		wxRect rcIcon(iIcon_x1, iIcon_y1, iIcon_x2, iIcon_y2);
 		posInfo.m_iconRect = rcIcon;
 
-		// 이름표시
-		if (m_bDispFlag[0])
-		{
-			iDisp_x1 = rcIcon.GetRight() + (GAP_WIDTH * 3);
-			iDisp_y1 = y1 + 1;
-			iDisp_x2 = iNameWidth;
-			iDisp_y2 = y2;
-
-			if (!m_bDispFlag[1])
-				iDisp_x2 = iAvaliableWidth;
-
-			wxRect rcName(iDisp_x1, iDisp_y1, iDisp_x2, iDisp_y2);
-			posInfo.m_nameRect = rcName;
-		}
+//		// 이름표시
+//		if (m_bDispFlag[0])
+//		{
+//			iDisp_x1 = rcIcon.GetRight() + (GAP_WIDTH * 3);
+//			iDisp_y1 = y1 + 1;
+//			iDisp_x2 = iNameWidth;
+//			iDisp_y2 = y2;
+//
+//			if (!m_bDispFlag[1])
+//				iDisp_x2 = iAvaliableWidth;
+//
+//			wxRect rcName(iDisp_x1, iDisp_y1, iDisp_x2, iDisp_y2);
+//			posInfo.m_nameRect = rcName;
+//		}
 
 		//설명
 		if (m_bDispFlag[4])
@@ -1124,6 +1127,18 @@ void CListView::CalcPosition(wxDC* pDC)
 
 			wxRect rcFileSizeType(iDisp_x1, iDisp_y1, iDisp_x2, iDisp_y2);
 			posInfo.m_sizeRectType = rcFileSizeType;
+		}
+
+		// 이름표시
+		if (m_bDispFlag[0])
+		{
+			iDisp_x1 = rcIcon.GetRight() + (GAP_WIDTH * 3);
+			iDisp_y1 = y1 + 1;
+			iDisp_x2 = m_bDispFlag[1] == true ? posInfo.m_sizeRect.GetLeft() - (iGapWidth * 3) : iAvaliableWidth;
+			iDisp_y2 = y2;
+
+			wxRect rcName(iDisp_x1, iDisp_y1, iDisp_x2, iDisp_y2);
+			posInfo.m_nameRect = rcName;
 		}
 		/*
 		}
@@ -1438,7 +1453,8 @@ void CListView::DisplayItems(wxDC* pDC)
 			pDC->SetPen(pen);
 			pDC->SetBrush(brush);
 
-			pDC->DrawRoundedRectangle(rcFillRect, -0.08);
+//			pDC->DrawRoundedRectangle(rcFillRect, -0.08);
+			pDC->DrawRectangle(rcFillRect);
 			//포커스가 없는경우
 			if (!m_bSetFocus)
 				dispColor = wxColour(90, 90, 90);
@@ -1532,7 +1548,60 @@ void CListView::DisplayItems(wxDC* pDC)
 				pDC->DrawLabel(strDesc, posInfo.m_typeNameRect, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
 			}
 		}
+#ifdef __WXMSW__
+		else
+		{
+			int iNameRCWidth = posInfo.m_nameRect.GetWidth();
+			int iMaxDriveNameWidth = pDC->GetTextExtent(m_strMaxDriveName).GetWidth();
+			int iDriveRate = iMaxDriveNameWidth * 100 / iNameRCWidth;
+			int iDriveWidth = iNameRCWidth * iDriveRate / 100;
+			wxString strDriveSpaceInfo = iter->GetDriveSpaceInfo();
 
+			int iDriveSpaceInfoWidth = pDC->GetTextExtent(strDriveSpaceInfo).GetWidth();
+
+			int x1 = posInfo.m_nameRect.GetLeft() + iDriveWidth + ICON_WIDTH;
+			int y1 = posInfo.m_nameRect.GetTop();
+			int x2 = x1 + iDriveSpaceInfoWidth;
+			int y2 = posInfo.m_nameRect.GetBottom();
+
+			if((iNameRCWidth > iMaxDriveNameWidth) && (x2 < posInfo.m_mainRect.GetRight()))
+			{
+				wxRect rcDriveSpace;
+
+				rcDriveSpace.SetLeft(x1);
+				rcDriveSpace.SetTop(y1);
+				rcDriveSpace.SetRight(x2);
+				rcDriveSpace.SetBottom(y2);
+
+				pDC->DrawLabel(strDriveSpaceInfo, rcDriveSpace, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
+			}
+//			int x1 = posInfo.m_nameRect.GetRight() + ICON_WIDTH;
+//			int y1 = posInfo.m_nameRect.GetTop();
+//			int x2 = x1;
+//			int y2 = posInfo.m_nameRect.GetBottom();
+//
+//			if( m_bDispFlag[4] ||
+//				m_bDispFlag[3] ||
+//				m_bDispFlag[2] ||
+//				m_bDispFlag[1] )
+//			{
+//				if(m_bDispFlag[4] || m_bDispFlag[3] || m_bDispFlag[2])
+//					x2 = posInfo.m_timeRect.GetRight();
+//				else if(m_bDispFlag[1])
+//					x2 = posInfo.m_sizeRect.GetRight();
+//
+//				wxString strDriveSpaceInfo = iter->GetDriveSpaceInfo();
+//				wxRect rcDriveSpace;
+//
+//				rcDriveSpace.SetLeft(x1);
+//				rcDriveSpace.SetTop(y1);
+//				rcDriveSpace.SetRight(x2);
+//				rcDriveSpace.SetBottom(y2);
+//
+//				pDC->DrawLabel(strDriveSpaceInfo, rcDriveSpace, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
+//			}
+		}
+#endif
 		if (bSelected)
 		{	//아이템이 선택되었을때 선택표시를 Polygon으로 처리(▶)
 			wxPoint ptSel[3];
