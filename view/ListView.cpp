@@ -1575,31 +1575,6 @@ void CListView::DisplayItems(wxDC* pDC)
 
 				pDC->DrawLabel(strDriveSpaceInfo, rcDriveSpace, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
 			}
-//			int x1 = posInfo.m_nameRect.GetRight() + ICON_WIDTH;
-//			int y1 = posInfo.m_nameRect.GetTop();
-//			int x2 = x1;
-//			int y2 = posInfo.m_nameRect.GetBottom();
-//
-//			if( m_bDispFlag[4] ||
-//				m_bDispFlag[3] ||
-//				m_bDispFlag[2] ||
-//				m_bDispFlag[1] )
-//			{
-//				if(m_bDispFlag[4] || m_bDispFlag[3] || m_bDispFlag[2])
-//					x2 = posInfo.m_timeRect.GetRight();
-//				else if(m_bDispFlag[1])
-//					x2 = posInfo.m_sizeRect.GetRight();
-//
-//				wxString strDriveSpaceInfo = iter->GetDriveSpaceInfo();
-//				wxRect rcDriveSpace;
-//
-//				rcDriveSpace.SetLeft(x1);
-//				rcDriveSpace.SetTop(y1);
-//				rcDriveSpace.SetRight(x2);
-//				rcDriveSpace.SetBottom(y2);
-//
-//				pDC->DrawLabel(strDriveSpaceInfo, rcDriveSpace, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
-//			}
 		}
 #endif
 		if (bSelected)

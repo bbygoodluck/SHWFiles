@@ -1,7 +1,7 @@
 #include "../ginc.h"
 #include "DlgFavoriteManager.h"
 #include "GenericDirDialog.h"
-DlgFavoriteManager::DlgFavoriteManager(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) 
+DlgFavoriteManager::DlgFavoriteManager(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style)
 	: wxDialog(parent, id, title, pos, size, style)
 	, m_strAddPath(wxT(""))
 	, m_bChanged(false)
@@ -169,7 +169,7 @@ DlgFavoriteManager::~DlgFavoriteManager()
 void DlgFavoriteManager::OnInitDialog(wxInitDialogEvent& event)
 {
 	m_txtPath->SetLabelText(m_strAddPath);
-	
+
 	CreateTreeImages(16);
 	wxTreeItemId rootId = m_treeFavorite->AddRoot(theMsgManager->GetMessage(wxT("MSG_TOOLBAR_FAVORITE")));
 	m_treeFavorite->SetItemImage(rootId, TreeCtrlIcon_Root);
@@ -184,7 +184,7 @@ void DlgFavoriteManager::OnInitDialog(wxInitDialogEvent& event)
 	m_treeFavorite->ExpandAll();
 
 	m_rootItem = m_treeFavorite->GetRootItem();
-	
+
 	if (m_bAddMode)
 	{
 		m_btnDelete->Enable(false);
@@ -218,7 +218,7 @@ void DlgFavoriteManager::CreateFavoriteTree(wxTreeItemId& treeNodeId, const Valu
 {
 	assert(items.IsArray());
 	unsigned int iBookMSize = items.Size();
-	
+
 	for (unsigned int i = 0; i < iBookMSize; i++)
 	{
 		wxString strName = items[i]["name"].GetString();
@@ -226,7 +226,7 @@ void DlgFavoriteManager::CreateFavoriteTree(wxTreeItemId& treeNodeId, const Valu
 		wxString strPath = items[i]["path"].GetString();
 		wxTreeItemId TreeItemId = nullptr;
 
-		if(strType.Cmp(wxT("item")) == 0) 
+		if(strType.Cmp(wxT("item")) == 0)
 			TreeItemId = m_treeFavorite->AppendItem(treeNodeId, strName, TreeCtrlIcon_Item, -1, new CFavoriteItem(strName, strType, strPath));
 		else
 		{
@@ -258,7 +258,7 @@ void DlgFavoriteManager::OnDirSelectClick(wxCommandEvent& event)
 	{
 		wxString strPath = dlgFavorite.GetPath();
 		m_txtPath->SetLabelText(strPath);
-	}			
+	}
 }
 
 void DlgFavoriteManager::OnAddClick(wxCommandEvent& event)
@@ -279,7 +279,7 @@ void DlgFavoriteManager::OnAddClick(wxCommandEvent& event)
 			return;
 		}
 	}
-	
+
 	wxString strName = m_txtFavoriteName->GetValue();
 	wxString strType = m_cmbType->GetSelection() == 0 ? wxT("item") : wxT("group");
 	wxString strPath = m_txtPath->GetValue();
@@ -333,11 +333,11 @@ void DlgFavoriteManager::OnModifyClick(wxCommandEvent& event)
 	wxString strPath = m_txtPath->GetValue();
 
 	pTreeItem->_strName = strName;
-	
+
 	if (m_strType.Cmp(strType) != 0)
 	{
-		int iRet = wxMessageBox(theMsgManager->GetMessage(wxT("MSG_DLG_BOOKMARK_CHANGE_TYPE")), 
-			PROGRAM_FULL_NAME, 
+		int iRet = wxMessageBox(theMsgManager->GetMessage(wxT("MSG_DLG_BOOKMARK_CHANGE_TYPE")),
+			PROGRAM_FULL_NAME,
 			wxICON_QUESTION | wxYES_NO);
 
 		if (iRet == wxYES)
@@ -433,7 +433,7 @@ void DlgFavoriteManager::OnTreeItemChanged(wxTreeEvent& event)
 
 		int iSelIndex = m_strType.Cmp("item") == 0 ? 0 : 1;
 		m_cmbType->SetSelection(iSelIndex);
-		
+
 		m_btnDelete->Enable(true);
 		m_btnModify->Enable(true);
 	}
@@ -473,10 +473,18 @@ bool DlgFavoriteManager::DoTreeItemDrop(wxTreeItemId& treeNodeSrc, wxTreeItemId&
 	CFavoriteItem* pTreeItemSrc = (CFavoriteItem *)m_treeFavorite->GetItemData(treeNodeSrc);
 	CFavoriteItem* pTreeItemDst = (CFavoriteItem *)m_treeFavorite->GetItemData(treeNodeDst);
 
-	if (pTreeItemDst->_strType.Cmp(wxT("item")) == 0)
+	if(pTreeItemDst == nullptr)
 	{
-		wxMessageBox(theMsgManager->GetMessage(wxT("MSG_DLG_FAVORITE_MOVE_GROUP")), PROGRAM_FULL_NAME, wxOK | wxICON_ERROR);
-		return false;
+		treeNodeDst = m_treeFavorite->GetRootItem();
+		pTreeItemDst = (CFavoriteItem *)m_treeFavorite->GetItemData(treeNodeDst);
+	}
+	else
+	{
+		if (pTreeItemDst->_strType.Cmp(wxT("item")) == 0)
+		{
+			wxMessageBox(theMsgManager->GetMessage(wxT("MSG_DLG_FAVORITE_MOVE_GROUP")), PROGRAM_FULL_NAME, wxOK | wxICON_ERROR);
+			return false;
+		}
 	}
 
 	wxString strName = pTreeItemSrc->_strName;
@@ -484,7 +492,8 @@ bool DlgFavoriteManager::DoTreeItemDrop(wxTreeItemId& treeNodeSrc, wxTreeItemId&
 	wxString strPath = pTreeItemSrc->_strPath;
 
 	int iImageNum = strType.Cmp(wxT("item")) == 0 ? TreeCtrlIcon_Item : TreeCtrlIcon_Group;
-	wxTreeItemId newTreeItemId = m_treeFavorite->AppendItem(treeNodeDst, strName, iImageNum, -1, new CFavoriteItem(strName, strType, strPath));
+//	wxTreeItemId newTreeItemId = m_treeFavorite->AppendItem(treeNodeDst, strName, iImageNum, -1, new CFavoriteItem(strName, strType, strPath));
+	wxTreeItemId newTreeItemId = m_treeFavorite->InsertItem(treeNodeDst, nullptr, strName, iImageNum, -1, new CFavoriteItem(strName, strType, strPath));
 
 	m_treeFavorite->SelectItem(newTreeItemId);
 
@@ -507,7 +516,7 @@ bool DlgFavoriteManager::DoTreeItemDrop(wxTreeItemId& treeNodeSrc, wxTreeItemId&
 			}
 		}
 	}
-	
+
 	return true;
 }
 
@@ -517,7 +526,7 @@ void DlgFavoriteManager::OnTreeEndLabelEdit(wxTreeEvent& event)
 	CFavoriteItem* pTreeItem = (CFavoriteItem *)m_treeFavorite->GetItemData(selectedTreeId);
 
 	wxString strName(event.GetLabel());
-	
+
 	if (pTreeItem)
 	{
 		pTreeItem->_strName = strName;
@@ -556,7 +565,7 @@ void DlgFavoriteManager::DoSave(wxTreeItemId& treeNodeId, Value& valParent, Docu
 		wxString strPath(wxT(""));
 
 		bool bFirst = true;
-		
+
 		while (1)
 		{
 			childId = bFirst ? m_treeFavorite->GetFirstChild(treeNodeId, itemValue) : m_treeFavorite->GetNextChild(treeNodeId, itemValue);
@@ -569,7 +578,7 @@ void DlgFavoriteManager::DoSave(wxTreeItemId& treeNodeId, Value& valParent, Docu
 			strName = pTreeItem->_strName;
 			strType = pTreeItem->_strType;
 			strPath = pTreeItem->_strPath;
-				
+
 			Value item;
 			item.SetObject();
 
@@ -580,7 +589,7 @@ void DlgFavoriteManager::DoSave(wxTreeItemId& treeNodeId, Value& valParent, Docu
 			item.AddMember("name", _name, allocator);
 			item.AddMember("type", _type, allocator);
 			item.AddMember("path", _path, allocator);
-			
+
 			Value valChildItem(kArrayType);
 
 			if (strType.Cmp(wxT("group")) == 0)
