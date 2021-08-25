@@ -152,6 +152,7 @@ void CViewPanel::ReloadPathOfView(const wxString& strInfo)
 void CViewPanel::ClearSelectedInfoOfView(bool bDelete)
 {
 	m_pFileListView->DoSelectedItemsClear(bDelete);
+	m_pFileListView->SetFocus();
 }
 
 void CViewPanel::ChangeViewColumn()

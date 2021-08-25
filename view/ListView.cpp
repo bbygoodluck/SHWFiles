@@ -671,7 +671,7 @@ void CListView::OnSize(wxSizeEvent& event)
 	m_viewDirInfo.SetBottom(m_viewRect.GetTop() + 20);
 
 	m_viewRectDetail.SetLeft(m_viewRect.GetLeft());
-	m_viewRectDetail.SetTop(m_viewRect.GetBottom() - 20);
+	m_viewRectDetail.SetTop(m_viewRect.GetBottom() - 21);
 	m_viewRectDetail.SetRight(m_viewRect.GetRight());
 	m_viewRectDetail.SetBottom(m_viewRect.GetBottom());
 
@@ -1797,7 +1797,7 @@ void CListView::DisplayItemDetailInfo(wxDC* pDC, int iIndex)
 	pDC->DrawRectangle(m_viewRectDetail);
 
 	int iImageFlag = ILD_NORMAL | ILC_MASK;
-	DrawItemImage(pDC, m_viewRectDetail.GetLeft() + 3, m_viewRectDetail.GetTop() + 2, iImageFlag, iter->m_iIconIndex, iter->m_iOvelayIndex);
+	DrawItemImage(pDC, m_viewRectDetail.GetLeft() + 3, m_viewRectDetail.GetTop() + 3, iImageFlag, iter->m_iIconIndex, iter->m_iOvelayIndex);
 
 
 	wxString strDetailInfo = iter->GetName();
