@@ -81,6 +81,7 @@ void CLocalFileListView::LoadDir(const wxString& strPath)
 
 	AddDrive();
 	m_nTotalItems = m_itemList.size();
+
 	RunReadImageList();
 
 	if (m_nCurrentItemIndex > m_nTotalItems)
@@ -287,7 +288,7 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 		}
 	}
 
-	RemoveDrive();
+//	RemoveDrive();
 
 	wxString strExt(wxT(""));
 	wxString strDesc(wxT(""));
@@ -332,9 +333,9 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 	SetItemImage(m_nTotalItems - 1);
 
 	DoSortStart();
-	AddDrive();
+//	AddDrive();
 
-	m_nTotalItems = wx_static_cast(int, m_itemList.size());
+//	m_nTotalItems = wx_static_cast(int, m_itemList.size());
 
 	UpdateLastAccessTime(wxDateTime::Now());
 	m_bSizeOrColumnChanged = true;
@@ -366,8 +367,8 @@ void CLocalFileListView::DoModify(const wxString& strName)
 		return;
 
 	int iSortType = theJsonConfig->GetSortType();
-	if(iSortType == VIEW_SORT_SIZE)
-		RemoveDrive();
+//	if(iSortType == VIEW_SORT_SIZE)
+//		RemoveDrive();
 
 	if(iter->IsFile())
 	{
@@ -382,7 +383,7 @@ void CLocalFileListView::DoModify(const wxString& strName)
 	if(iSortType == VIEW_SORT_SIZE)
 	{
 		DoSortStart();
-		AddDrive();
+//		AddDrive();
 	}
 
 	UpdateLastAccessTime(wxDateTime::Now());
@@ -462,7 +463,7 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 	if(iterNew != m_itemList.end())
 		m_itemList.erase(iterNew);
 
-	RemoveDrive();
+//	RemoveDrive();
 
 	CDirData dirItem;
 	dirItem.SetName(strNewName);
@@ -497,7 +498,7 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 	SetItemImage(m_nTotalItems - 1);
 
 	DoSortStart();
-	AddDrive();
+//	AddDrive();
 
 	m_nTotalItems = wx_static_cast(int, m_itemList.size());
 

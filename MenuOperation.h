@@ -10,7 +10,9 @@ private:
 	explicit CMenuOperation() {};
 
 public:
-	~CMenuOperation() {};
+	~CMenuOperation() {
+		m_menuFnPtrMap.clear();
+	};
 	static CMenuOperation *Get();
 
 	void SetEventHandler(CEventHandler * pHandler);

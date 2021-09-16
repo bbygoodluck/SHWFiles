@@ -1226,27 +1226,28 @@ void CListView::DoSortStart(bool bSetDrive)
 	wxVector<CDirData>::const_iterator iter = m_itemList.begin();
 	wxString strName = iter->GetName();
 	int iSortStartIndex = 0;
-	int iSortEndIndex = 0;
+//	int iSortEndIndex = 0;
 
 	if(strName.Cmp(wxT("..")) == 0)
 		iSortStartIndex = 1;
 
-#ifdef __WXMSW__
-	if(bSetDrive)
-		iSortEndIndex = theDriveInfo->GetDriveCount();
-#endif // __WXMSW__
+//#ifdef __WXMSW__
+//	if(bSetDrive)
+//		iSortEndIndex = theDriveInfo->GetDriveCount();
+//#endif // __WXMSW__
+
 	switch(iSortType)
 	{
 		case VIEW_SORT_DEFAULT:
-			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end() - iSortEndIndex, CSorting::DirSortOfName);
+			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end()/* - iSortEndIndex */, CSorting::DirSortOfName);
 			break;
 
 		case VIEW_SORT_TIME:
-			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end() - iSortEndIndex, CSorting::DirSortOfTime);
+			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end()/* - iSortEndIndex */, CSorting::DirSortOfTime);
 			break;
 
 		case VIEW_SORT_SIZE:
-			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end() - iSortEndIndex, CSorting::DirSortOfSize);
+			std::sort(m_itemList.begin() + iSortStartIndex, m_itemList.end()/* - iSortEndIndex */, CSorting::DirSortOfSize);
 			break;
 
 		default:
@@ -2660,7 +2661,6 @@ wxString CListView::GetCompressedFileForDecompress()
 	auto item = m_itemList.begin() + m_nCurrentItemIndex;
 	return item->GetFullPath();
 }
-
 
 void CListView::OnMenuViewSubDir(wxCommandEvent& event)
 {

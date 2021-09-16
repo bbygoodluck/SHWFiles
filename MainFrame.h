@@ -33,7 +33,7 @@ private:
 private:
 #ifdef __WXMSW__
 	virtual WXLRESULT MSWDefWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
-	void OnDeviceChange(UINT nEventType, DWORD dwData);
+	void OnDeviceChange(WXWPARAM nEventType, WXLPARAM dwData);
 #endif
 
 	void OnClose(wxCloseEvent& event);

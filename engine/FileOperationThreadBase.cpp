@@ -35,7 +35,7 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 
 	bool IsCut = (m_fop == FILE_OP_CUT ? true : false);
 
-	if (!CLocalFileSystem::IsWritable(strSrc, (m_fop == FILE_OP_CUT ? FILE_SHARE_DELETE : FILE_SHARE_READ)))
+	if (!CLocalFileSystem::IsWritable(strSrc, (IsCut ? FILE_SHARE_DELETE : FILE_SHARE_READ)))
 	{
 		m_strMsg = wxString::Format(theMsgManager->GetMessage(wxT("MSG_DLG_COPY_MOVE_USE_ANOTHER_PG")), strSrc);
 		m_bOperationContinue = false;

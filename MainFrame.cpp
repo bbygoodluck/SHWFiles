@@ -192,12 +192,17 @@ WXLRESULT CMainFrame::MSWDefWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lP
 	return rc;
 }
 
-void CMainFrame::OnDeviceChange(UINT nEventType, DWORD dwData)
+void CMainFrame::OnDeviceChange(WXWPARAM nEventType, WXLPARAM dwData)
 {
 	if ((nEventType != DBT_DEVICEARRIVAL) && (nEventType != DBT_DEVICEREMOVECOMPLETE))
 		return;
 
-	PDEV_BROADCAST_HDR pdbh = (PDEV_BROADCAST_HDR)dwData;
+	PDEV_BROADCAST_HDR pdbh = reinterpret_cast<DEV_BROADCAST_HDR *>(dwData);
+
+	DWORD dbhSize = pdbh->dbch_size;
+	if(dbhSize == 0)
+		return;
+
 	if (pdbh->dbch_devicetype != DBT_DEVTYP_VOLUME)
 		return;
 

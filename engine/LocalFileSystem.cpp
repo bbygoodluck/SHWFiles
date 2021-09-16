@@ -214,6 +214,10 @@ bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwAccess, bool 
 //	return false;
 
 #ifdef __WXMSW__
+	DWORD dwAttribute = GetFileAttributes(strPath);
+	if(dwAttribute == (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_ARCHIVE))
+		return true;
+
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 
     hFile = CreateFile(strPath,
@@ -224,11 +228,12 @@ bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwAccess, bool 
                        0,
                        NULL);
 
+	DWORD dwErr = GetLastError();
     if (hFile == INVALID_HANDLE_VALUE)
 	{
 		if(IsWatcher)
 		{
-			DWORD dwErr = GetLastError();
+			dwErr = GetLastError();
 			if(dwErr == 0x0020) //다른 프로세스에서 이 파일을 사용하고 있기 때문에 이 파일을 액세스할 수 없습니다.(잘라내기가 아닌경우 체크)
 				return true;
 		}
