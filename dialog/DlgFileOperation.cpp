@@ -88,7 +88,7 @@ FileOperationDlg::FileOperationDlg(wxWindow* parent, wxWindowID id, const wxStri
 
 	m_staticCurrentTotal = new wxStaticText(this, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
 	m_staticCurrentTotal->Wrap(-1);
-	bSizer6->Add(m_staticCurrentTotal, 0, wxALIGN_RIGHT | wxALL, 5);
+	bSizer6->Add(m_staticCurrentTotal, 0, wxALIGN_RIGHT|wxALL|wxRESERVE_SPACE_EVEN_IF_HIDDEN, 5);
 
 
 	bSizer5->Add(bSizer6, 1, 0, 5);
@@ -102,7 +102,7 @@ FileOperationDlg::FileOperationDlg(wxWindow* parent, wxWindowID id, const wxStri
 
 	m_staticTotal = new wxStaticText(this, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
 	m_staticTotal->Wrap(-1);
-	bSizer1->Add(m_staticTotal, 0, wxALIGN_RIGHT | wxBOTTOM | wxRIGHT, 5);
+	bSizer1->Add(m_staticTotal, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
 	m_staticline1 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
 	bSizer1->Add(m_staticline1, 0, wxEXPAND | wxALL, 5);

@@ -180,8 +180,23 @@ WXLRESULT CMainFrame::MSWDefWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lP
 	WXLRESULT rc;
 	switch (nMsg)
 	{
+		case WM_ACTIVATEAPP:
+		{
+			if((LOWORD(wParam) == WA_CLICKACTIVE) || (LOWORD(wParam) == WA_ACTIVE))
+			{
+				if(!m_bFirstExec)
+					theMenuOperation->SetFocusAppActivated();
+
+				m_bFirstExec = false;
+				return 0;
+			}
+		}
+
+			break;
+
 		case WM_DEVICECHANGE:
 			OnDeviceChange(wParam, lParam);
+			return 0;
 			break;
 
 		default:

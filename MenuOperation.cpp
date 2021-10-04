@@ -943,3 +943,8 @@ void CMenuOperation::UpdateDriveSpace(const wxString& strDrive)
 	}
 }
 #endif
+
+void CMenuOperation::SetFocusAppActivated()
+{
+	theSplitterManager->GetActiveTab()->GetActiveViewPanel()->SetActivateView();
+}

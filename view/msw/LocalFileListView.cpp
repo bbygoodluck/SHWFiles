@@ -81,7 +81,6 @@ void CLocalFileListView::LoadDir(const wxString& strPath)
 
 	AddDrive();
 	m_nTotalItems = m_itemList.size();
-
 	RunReadImageList();
 
 	if (m_nCurrentItemIndex > m_nTotalItems)
@@ -270,40 +269,53 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 	wxLongLong llSize(0);
 	wxDateTime dt(0.0);
 
+	bool bReadAttr = true;
 	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
-		return;
-
-	if(!isDir)
-	{
-		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ, true))
-			return;
-	}
-
-	if (!theJsonConfig->IsViewAllFile())
-	{
-		if (!theJsonConfig->IsViewHiddenFile())
-		{
-			if (lattr & ATTR_HIDDEN)
-				return;
-		}
-	}
-
-//	RemoveDrive();
-
-	wxString strExt(wxT(""));
-	wxString strDesc(wxT(""));
+		bReadAttr = false;
 
 	CDirData dirItem;
 	dirItem.SetName(strName);
 
+	wxString strExt(wxT(""));
+	wxString strDesc(wxT(""));
+
 	strDesc = wxT("");
 	strExt = wxT("");
 
-	if (isDir)
+	if(bReadAttr)
 	{
-		m_iDirCount++;
-		dirItem.SetType(CDirData::item_type::dir);
-		strDesc = theMsgManager->GetMessage(wxT("MSG_DIR_DESCRIPTION"));
+		if(!isDir)
+		{
+			if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ, true))
+				return;
+		}
+
+		if (!theJsonConfig->IsViewAllFile())
+		{
+			if (!theJsonConfig->IsViewHiddenFile())
+			{
+				if (lattr & ATTR_HIDDEN)
+					return;
+			}
+		}
+//	RemoveDrive();
+
+		if (isDir)
+		{
+			m_iDirCount++;
+			dirItem.SetType(CDirData::item_type::dir);
+			strDesc = theMsgManager->GetMessage(wxT("MSG_DIR_DESCRIPTION"));
+		}
+		else
+		{
+			m_iFileCount++;
+			dirItem.SetType(CDirData::item_type::file);
+
+			strExt = theCommonUtil->GetExt(strName);
+			strDesc = theExtInfo->GetExtInfo(strExt, strFullPathName);
+
+			m_dblFileSizeInDir += llSize.ToDouble();
+		}
 	}
 	else
 	{
@@ -312,8 +324,6 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 
 		strExt = theCommonUtil->GetExt(strName);
 		strDesc = theExtInfo->GetExtInfo(strExt, strFullPathName);
-
-		m_dblFileSizeInDir += llSize.ToDouble();
 	}
 
 	dirItem.SetAttribute(lattr);
@@ -345,40 +355,57 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 
 void CLocalFileListView::DoModify(const wxString& strName)
 {
-	wxString strFullPathName = MakeFullPathName(strName);
-	bool isDir = false;
-	unsigned long lattr = 0;
-	wxLongLong llSize(0);
-	wxDateTime dt(0.0);
-
-	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
-		return;
-
-	if(!isDir)
-	{
-		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ | FILE_SHARE_WRITE, true))
-			return;
-	}
-
 	//아이템이 존재하는지 체크
 	bool bExist = false;
 	wxVector<CDirData>::iterator iter = GetItemExist(strName, bExist);
 	if(iter == m_itemList.end())
 		return;
 
-	int iSortType = theJsonConfig->GetSortType();
+	wxString strFullPathName = MakeFullPathName(strName);
+	bool isDir = false;
+	unsigned long lattr = 0;
+	wxLongLong llSize(0);
+	wxDateTime dt(0.0);
+
+	bool bReadAttr = true;
+	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
+		bReadAttr = false;
+
+	if(bReadAttr)
+	{
+		if(!isDir)
+		{
+			if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ | FILE_SHARE_WRITE, true))
+				return;
+		}
+
+
+	//아이템이 존재하는지 체크
+//	bool bExist = false;
+//	wxVector<CDirData>::iterator iter = GetItemExist(strName, bExist);
+//	if(iter == m_itemList.end())
+//		return;
+
+//	int iSortType = theJsonConfig->GetSortType();
 //	if(iSortType == VIEW_SORT_SIZE)
 //		RemoveDrive();
 
-	if(iter->IsFile())
-	{
-		m_dblFileSizeInDir -= iter->GetSize().ToDouble();
-		m_dblFileSizeInDir += llSize.ToDouble();
+		if(iter->IsFile())
+		{
+			m_dblFileSizeInDir -= iter->GetSize().ToDouble();
+			m_dblFileSizeInDir += llSize.ToDouble();
+		}
+
+		iter->SetAttribute(lattr);
+		iter->SetSize(llSize);
+		iter->SetDateTime(dt);
 	}
 
-	iter->SetAttribute(lattr);
-	iter->SetSize(llSize);
-	iter->SetDateTime(dt);
+	int iSortType = theJsonConfig->GetSortType();
+
+//	iter->SetAttribute(lattr);
+//	iter->SetSize(llSize);
+//	iter->SetDateTime(dt);
 
 	if(iSortType == VIEW_SORT_SIZE)
 	{
@@ -438,17 +465,21 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 	wxDateTime dt(0.0);
 
 	wxString strFullPathName = MakeFullPathName(strNewName);
-	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
-		return;
 
-	if(!isDir)
+	bool bReadAttr = true;
+	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
+		bReadAttr = false;
+
+	if(bReadAttr)
 	{
-		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ, true))
-			return;
+		if(!isDir)
+		{
+			if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ, true))
+				return;
+		}
 	}
 
 	bool bOldExist = false;
-
 
 	wxVector<CDirData>::iterator iterOld = GetItemExist(strOldName, bOldExist);
 
@@ -476,13 +507,15 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 
 		dirItem.SetType(CDirData::item_type::file);
 		dirItem.SetExt(strExt);
+
+	//	m_dblFileSizeInDir += llSize.ToDouble();
 	}
 	else
 	{
 		dirItem.SetType(CDirData::item_type::dir);
 		strDesc = theMsgManager->GetMessage(wxT("MSG_DIR_DESCRIPTION"));
 
-		m_dblFileSizeInDir += llSize.ToDouble();
+	//	m_dblFileSizeInDir += llSize.ToDouble();
 	}
 
 	dirItem.SetAttribute(lattr);

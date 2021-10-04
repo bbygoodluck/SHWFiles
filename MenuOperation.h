@@ -84,6 +84,11 @@ public:
 
 	//ToolbarEvent
 	void ExecuteToolbar(int id);
+
+	//2021.09.30 Add Start
+	// 비활성 -> 활성이 되었을 경우 현재 활성탭에 대한 포커스 활성화
+	void SetFocusAppActivated();
+	//2021.09.30 Add End
 #ifdef __WXMSW__
 	//드라이브 추가 삭제
 	void AddDrive();

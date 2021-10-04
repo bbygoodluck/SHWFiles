@@ -22,6 +22,7 @@ private:
 	wxAuiManager	m_mgr;
 	bool m_bMaximize = false;
 	bool m_bCreateOK = false;
+	bool m_bFirstExec = true;
 
 	CEventHandler*	m_pSHFEventHandler;
 	std::unique_ptr<CCustomStatusBar> m_pStatusBar;
