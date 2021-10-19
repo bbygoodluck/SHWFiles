@@ -136,49 +136,52 @@ wxThread::ExitCode CLocalFileSystemWatcher::Entry()
 		if (m_bRemove)
 			break;
 
-		if (bResultR && bResultQ)
+		PFILE_NOTIFY_INFORMATION pNotify = (PFILE_NOTIFY_INFORMATION)m_watchDir.m_Buffer;
+		bool bCanRead = true;
+		if ((ULONG_PTR)pNotify - (ULONG_PTR)m_watchDir.m_Buffer > bufferSize)
+			bCanRead = false;
+
+		if (!bCanRead)
+			continue;
+
+		DWORD dwOffset = 0;
+
+		wxString strOldName(wxT(""));
+		wxString strNewName(wxT(""));
+
+		bool bWatched = false;
+
+		do
 		{
-			PFILE_NOTIFY_INFORMATION pNotify = (PFILE_NOTIFY_INFORMATION)m_watchDir.m_Buffer;
-			bool bCanRead = true;
-			if ((ULONG_PTR)pNotify - (ULONG_PTR)m_watchDir.m_Buffer > bufferSize)
-				bCanRead = false;
-
-			if (!bCanRead)
-				continue;
-
-			DWORD dwOffset = 0;
-
-			wxString strOldName(wxT(""));
-			wxString strNewName(wxT(""));
-
-			do
+			dwOffset = pNotify->NextEntryOffset;
+			wxZeroMemory(buf);
+			errno_t err = wcsncat_s(buf, bufferSize, pNotify->FileName, std::min(bufferSize, int(pNotify->FileNameLength / sizeof(TCHAR))));
+			if (err == STRUNCATE)
 			{
-				dwOffset = pNotify->NextEntryOffset;
-				wxZeroMemory(buf);
-				errno_t err = wcsncat_s(buf, bufferSize, pNotify->FileName, std::min(bufferSize, int(pNotify->FileNameLength / sizeof(TCHAR))));
-				if (err == STRUNCATE)
-				{
-					pNotify = (PFILE_NOTIFY_INFORMATION)((LPBYTE)pNotify + dwOffset);
-					continue;
-				}
-
-				buf[std::min((decltype((pNotify->FileNameLength / sizeof(WCHAR))))bufferSize - 1, (pNotify->FileNameLength / sizeof(WCHAR)))] = L'\0';
-				wxString strFileName(buf);
-				wxString strFullPath = m_watchDir.m_strDir[m_watchDir.m_strDir.Len() - 1] == SLASH[0] ? m_watchDir.m_strDir + strFileName : m_watchDir.m_strDir + SLASH + strFileName;
-
-				int iAction = Native2WatcherFlags(pNotify->Action);
-				if (pNotify->Action == FILE_ACTION_RENAMED_OLD_NAME)
-					strOldName = strFileName;
-
-				if ((iAction != -1) && (pNotify->Action != FILE_ACTION_RENAMED_OLD_NAME))
-					ProcessWatchAction(strOldName, strFileName, iAction);
-
 				pNotify = (PFILE_NOTIFY_INFORMATION)((LPBYTE)pNotify + dwOffset);
-				if ((ULONG_PTR)pNotify - (ULONG_PTR)m_watchDir.m_Buffer > bufferSize)
-					break;
+				continue;
+			}
 
-			} while (dwOffset);
+			buf[std::min((decltype((pNotify->FileNameLength / sizeof(WCHAR))))bufferSize - 1, (pNotify->FileNameLength / sizeof(WCHAR)))] = L'\0';
+			wxString strFileName(buf);
+			wxString strFullPath = m_watchDir.m_strDir[m_watchDir.m_strDir.Len() - 1] == SLASH[0] ? m_watchDir.m_strDir + strFileName : m_watchDir.m_strDir + SLASH + strFileName;
 
+			int iAction = Native2WatcherFlags(pNotify->Action);
+			if (pNotify->Action == FILE_ACTION_RENAMED_OLD_NAME)
+				strOldName = strFileName;
+
+			if ((iAction != -1) && (pNotify->Action != FILE_ACTION_RENAMED_OLD_NAME))
+				ProcessWatchAction(strOldName, strFileName, iAction);
+
+			bWatched = true;
+			pNotify = (PFILE_NOTIFY_INFORMATION)((LPBYTE)pNotify + dwOffset);
+			if ((ULONG_PTR)pNotify - (ULONG_PTR)m_watchDir.m_Buffer > bufferSize)
+				break;
+
+		} while (dwOffset);
+
+		if(bWatched)
+		{
 			wxZeroMemory(m_watchDir.m_Buffer);
 
 			if (theJsonConfig->IsDirectoryWatcherAsync())
