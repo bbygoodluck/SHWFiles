@@ -944,8 +944,14 @@ void CMenuOperation::UpdateDriveSpace(const wxString& strDrive)
 }
 #endif
 
-void CMenuOperation::SetFocusAppActivated()
+void CMenuOperation::SetAppActivateOrNot(bool bActivate)
 {
-	theSplitterManager->SetActivatePage();
-	theSplitterManager->GetActiveTab()->GetActiveViewPanel()->SetActivateView();
+	if(!bActivate)
+	{
+		theSplitterManager->SetTabManagerWhenLostFocus();
+		return;
+	}
+
+	CTabManager* pActiveTab = theSplitterManager->SetActivateTabWhenActivateApp();
+	pActiveTab->GetActiveViewPanel()->SetActivateView();
 }

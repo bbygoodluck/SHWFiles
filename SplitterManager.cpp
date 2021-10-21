@@ -116,6 +116,7 @@ void CSplitterManager::SetDefaultActiveTab()
 void CSplitterManager::SetActivatePage()
 {
 	m_pActiveTab->ActivatePage();
+	_gTabManager = m_pActiveTab;
 }
 
 void CSplitterManager::ChangeActiveTab()
@@ -163,4 +164,15 @@ CTabManager* CSplitterManager::GetAnotherTab()
 		return m_pActiveTab == m_pTabLeft.get() ? m_pTabRight.get() : m_pTabLeft.get();
 
 	return nullptr;
+}
+
+void CSplitterManager::SetTabManagerWhenLostFocus()
+{
+	_gTabManager = m_pActiveTab;
+}
+
+CTabManager* CSplitterManager::SetActivateTabWhenActivateApp()
+{
+	m_pActiveTab = _gTabManager;
+	return m_pActiveTab;
 }

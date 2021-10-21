@@ -16,6 +16,8 @@ public:
 	bool Init();
 
 	void DoSplitter(const wxSize& _size = wxSize(0,0));
+
+	CTabManager* SetActivateTabWhenActivateApp();
 	CTabManager* GetActiveTab() { return m_pActiveTab; }
 	CTabManager* GetAnotherTab();
 
@@ -49,6 +51,8 @@ public:
 
 	void ChangeTabPagePathName(const wxString& strPath);
 	void AddTabPage();
+
+	void SetTabManagerWhenLostFocus();
 
 private:
 	void CreateTabManager();

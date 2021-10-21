@@ -182,7 +182,7 @@ WXLRESULT CMainFrame::MSWDefWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lP
 	{
 		case WM_ACTIVATEAPP:
 		{
-			if((LOWORD(wParam) == WA_CLICKACTIVE) || (LOWORD(wParam) == WA_ACTIVE))
+		/*	if( (LOWORD(wParam) == WA_CLICKACTIVE) || (LOWORD(wParam) == WA_ACTIVE))
 			{
 				if(!m_bFirstExec)
 					theMenuOperation->SetFocusAppActivated();
@@ -190,8 +190,25 @@ WXLRESULT CMainFrame::MSWDefWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lP
 				m_bFirstExec = false;
 				return 0;
 			}
+		*/
+			if(wParam == true) //활성화 되었을때
+			{
+				if(!m_bFirstExec)
+					theMenuOperation->SetAppActivateOrNot();
+
+				m_bFirstExec = false;
+			}
+
+			return 0;
 		}
 
+			break;
+
+		case WM_ACTIVATE:
+			if(LOWORD(wParam) == WA_INACTIVE) //비활성화 되었을
+				theMenuOperation->SetAppActivateOrNot(false);
+
+			return 0;
 			break;
 
 		case WM_DEVICECHANGE:

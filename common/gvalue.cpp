@@ -29,7 +29,7 @@ wxString _gSystemLang = wxT("");
 std::unordered_map<wxString, wxString> _gCacheFileType;
 
 // Global TabManager
-//CTabManager* _gTabManager      = nullptr;
+CTabManager* _gTabManager      = nullptr;
 
 //App Activate Flag
 bool _gAppActivated = false;

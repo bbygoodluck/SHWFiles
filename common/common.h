@@ -47,6 +47,7 @@
 #include "defs.h"
 //Lock변수
 #include "Lock.h"
+
 // extern 전역변수
 #include "gvalue.h"
 // 버전정보

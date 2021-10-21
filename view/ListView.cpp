@@ -129,13 +129,13 @@ CListView::~CListView()
 
 void CListView::OnCharHook(wxKeyEvent& event)
 {
-	if(m_bRename)
+	int iKeyCode = event.GetKeyCode();
+
+	if(m_bRename || (!m_strKeyInput.IsEmpty() && iKeyCode == 46))
 	{
 		event.Skip();
 		return;
 	}
-
-	int iKeyCode = event.GetKeyCode();
 
 	bool bControlDown = event.ControlDown();
 	bool bAltDown     = event.AltDown();
@@ -191,7 +191,7 @@ void CListView::OnCharHook(wxKeyEvent& event)
 void CListView::OnChar(wxKeyEvent& event)
 {
 	int iKeyCode = event.GetKeyCode();
-	if (theSkipKeyMap->IsExistSkipKey(iKeyCode))
+	if (m_strKeyInput.IsEmpty() && theSkipKeyMap->IsExistSkipKey(iKeyCode))
 	{
 		event.Skip();
 		return;
