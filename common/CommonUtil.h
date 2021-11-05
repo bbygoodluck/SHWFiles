@@ -66,7 +66,7 @@ public:
 	//프로그램 실행
 	void LaunchAndExec(const wxString& strExecProgram, const wxString& strPath);
 	//아이콘 인덱스
-	void GetIconIndex(const wxString& strPath, int &iIconIndex, int &iOverlayIndex);
+	void GetIconIndex(const wxString& strPath, int &iIconIndex, int &iOverlayIndex, bool bExtFind = false);
 	//1000자리 콤마
 	wxString SetComma(const wxString& strSize);
 	//문자열 ...표시

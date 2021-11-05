@@ -222,5 +222,13 @@ bool CSHWFilesApp::LoadJsonConfigs()
 		return false;
 	}
 
+#ifdef __WXMSW__
+	if(!theIconInfo->Load())
+	{
+		wxMessageBox(theMsgManager->GetMessage(wxT("Read error of FileIconInfo jsonfile")), PROGRAM_FULL_NAME, wxOK | wxICON_ERROR);
+		return false;
+	}
+#endif // __WXMSW__
+
 	return true;
 }

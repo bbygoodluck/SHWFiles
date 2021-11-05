@@ -100,10 +100,12 @@
 	#include "../interface/msw/DriveInfo.h"
 	#include "../interface/msw/MSWCopyMoveClipboard.h"
 	#include "SpecialFolderManager.h"
+	#include "JsonFileIconInfo.h"
 
 	#define theDriveInfo     (CDriveInfo::Get())
 	#define theSPFolder      (CSpecialFolderManager::Get())
 	#define theClipboard     (CClipboard::Get())
+	#define theIconInfo      (CJsonFileIconInfo::Get())
 #endif
 
 // 북마크(즐겨찾기)

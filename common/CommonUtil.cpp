@@ -492,19 +492,28 @@ void CCommonUtil::LaunchAndExec(const wxString& strExecProgram, const wxString& 
 #endif
 }
 
-void CCommonUtil::GetIconIndex(const wxString& strPath, int &iIconIndex, int &iOverlayIndex)
+void CCommonUtil::GetIconIndex(const wxString& strPath, int &iIconIndex, int &iOverlayIndex, bool bExtFind)
 {
 #ifdef __WXMSW__
+	CoInitialize(NULL);
 	SHFILEINFO sfi;
 	::ZeroMemory(&sfi, sizeof(sfi));
 
 	DWORD dwNum = GetFileAttributes(strPath);
+	UINT flag = IMAGELIST_FLAG;
+	if(bExtFind)
+	{
+		flag |= SHGFI_USEFILEATTRIBUTES;
+		dwNum = FILE_ATTRIBUTE_NORMAL;
+	}
 
-	SHGetFileInfo(strPath, dwNum, &sfi, sizeof(sfi), IMAGELIST_FLAG);// | SHGFI_ADDOVERLAYS);
+	SHGetFileInfo(strPath, dwNum, &sfi, sizeof(sfi), flag);
+
 	iIconIndex = (sfi.iIcon & 0x00FFFFFF);
 	iOverlayIndex = (sfi.iIcon >> 24) - 1;
 
 	DestroyIcon(sfi.hIcon);
+	CoUninitialize();
 #else
 
 #endif

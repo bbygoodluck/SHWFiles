@@ -1,4 +1,4 @@
-#include "../../common/common.h"
+#include "../../ginc.h"
 #include "DriveInfo.h"
 
 std::unique_ptr<CDriveInfo> CDriveInfo::m_pInstance(nullptr);

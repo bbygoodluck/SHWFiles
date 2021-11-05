@@ -24,8 +24,7 @@ public:
 
 	static bool IsCanReadDir(const wxString& strPath);
 	static bool GetAttributeInfo(const wxString& strName, bool& isDir, unsigned long& lattr, wxLongLong* llSize, wxDateTime* dt);
-	static bool IsWritable(const wxString& strPath, DWORD dwAccess = 0, bool IsWatcher = false);
-//	static bool IsWritable(const wxString& strPath, int mode);
+	static bool IsWritable(const wxString& strPath, DWORD dwShareMode = 0, bool IsWatcher = false);
 	static bool RecursiveDelete(const wxString& path, wxWindow* parent, bool bGoTrash, int& iRet);
 	static bool RecursiveDelete(const std::list<wxString>& dirsToVisit, wxWindow* parent, bool bGoTrash, int& iRet);
 	static enum local_filetype GetFileType(const wxString& path);

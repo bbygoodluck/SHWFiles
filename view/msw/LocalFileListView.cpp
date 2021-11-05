@@ -167,6 +167,17 @@ bool CLocalFileListView::ReadDirectory()
 			strDesc = theExtInfo->GetExtInfo(strExt, m_strCurrentPath + (m_iPathDepth != 1 ? SLASH + strName : strName));
 
 			m_dblFileSizeInDir += llSize.ToDouble();
+			//2021.11.03 Add *************************************************************
+			int iIconIndex = 0;
+			int iOverlay = 0;
+
+			if(theIconInfo->GetFileIconInfo(strExt, iIconIndex, iOverlay))
+			{
+				dirItem.m_iIconIndex = iIconIndex;
+				dirItem.m_iOvelayIndex = iOverlay;
+				dirItem.m_bIconImageSet = true;
+			}
+			//2021.11.03 Add *************************************************************
 		}
 
 		dirItem.SetAttribute(lattr);
@@ -282,9 +293,10 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 	strDesc = wxT("");
 	strExt = wxT("");
 
+	/* FileSystemWatcher의 FS_WATCHER_CREATE 이벤트에 대해서는 읽기 쓰기를 파일에 대해서만 처리함 */
 	if(!isDir)
 	{
-		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ, true))
+		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ | FILE_SHARE_WRITE, true))
 			return;
 	}
 
@@ -296,7 +308,6 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 				return;
 		}
 	}
-//	RemoveDrive();
 
 	if (isDir)
 	{
@@ -313,6 +324,18 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 		strDesc = theExtInfo->GetExtInfo(strExt, strFullPathName);
 
 		m_dblFileSizeInDir += llSize.ToDouble();
+
+		//2021.11.03 Add *************************************************************
+		int iIconIndex = 0;
+		int iOverlay = 0;
+
+		if(theIconInfo->GetFileIconInfo(strExt, iIconIndex, iOverlay))
+		{
+			dirItem.m_iIconIndex = iIconIndex;
+			dirItem.m_iOvelayIndex = iOverlay;
+			dirItem.m_bIconImageSet = true;
+		}
+		//2021.11.03 Add *************************************************************
 	}
 
 	dirItem.SetAttribute(lattr);
@@ -332,9 +355,6 @@ void CLocalFileListView::DoCreate(const wxString& strName)
 	SetItemImage(m_nTotalItems - 1);
 
 	DoSortStart();
-//	AddDrive();
-
-//	m_nTotalItems = wx_static_cast(int, m_itemList.size());
 
 	UpdateLastAccessTime(wxDateTime::Now());
 	m_bSizeOrColumnChanged = true;
@@ -353,11 +373,8 @@ void CLocalFileListView::DoModify(const wxString& strName)
 	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
 		return;
 
-	if(!isDir)
-	{
-		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ | FILE_SHARE_WRITE, true))
-			return;
-	}
+	if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ | FILE_SHARE_WRITE, true))
+		return;
 
 
 	//아이템이 존재하는지 체크
@@ -367,8 +384,6 @@ void CLocalFileListView::DoModify(const wxString& strName)
 		return;
 
 	int iSortType = theJsonConfig->GetSortType();
-//	if(iSortType == VIEW_SORT_SIZE)
-//		RemoveDrive();
 
 	if(iter->IsFile())
 	{
@@ -381,10 +396,7 @@ void CLocalFileListView::DoModify(const wxString& strName)
 	iter->SetDateTime(dt);
 
 	if(iSortType == VIEW_SORT_SIZE)
-	{
 		DoSortStart();
-//		AddDrive();
-	}
 
 	UpdateLastAccessTime(wxDateTime::Now());
 	theCommonUtil->RefreshWindow(this, m_viewRect);
@@ -394,11 +406,23 @@ void CLocalFileListView::DoModify(const wxString& strName)
 
 void CLocalFileListView::DoDelete(const wxString& strName)
 {
+	wxString strFullPathName = MakeFullPathName(strName);
+
 	bool bExist = false;
 	wxVector<CDirData>::iterator iter = GetItemExist(strName, bExist);
 
 	if(iter == m_itemList.end())
 		return;
+
+	/*
+	 * FileSystemWatcher의 FS_WATCHER_DELETE 이벤트 발생 이후에도 실제 데이터가 남아 있는경우
+	 * 데이터 삭제처리를 하지 않고 return
+	 */
+	bool bFile = iter->IsFile();
+	bool bDataExist = bFile ? wxFileExists(strFullPathName) : wxDirExists(strFullPathName);
+	if(bDataExist)
+		return;
+
 
 	wxString strDesc = iter->GetTypeName();
 
@@ -442,11 +466,11 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 	if(!CLocalFileSystem::GetAttributeInfo(strFullPathName, isDir, lattr, &llSize, &dt))
 		return;
 
-	if(!isDir)
-	{
-		if(!CLocalFileSystem::IsWritable(strFullPathName, FILE_SHARE_READ, true))
-			return;
-	}
+//	if(!isDir)
+//	{
+//		if(!CLocalFileSystem::IsWritable(strFullPathName, 0, true))
+//			return;
+//	}
 
 	bool bOldExist = false;
 
@@ -476,6 +500,18 @@ void CLocalFileListView::DoRename(const wxString& strOldName, const wxString& st
 
 		dirItem.SetType(CDirData::item_type::file);
 		dirItem.SetExt(strExt);
+
+		//2021.11.03 Add *************************************************************
+		int iIconIndex = 0;
+		int iOverlay = 0;
+
+		if(theIconInfo->GetFileIconInfo(strExt, iIconIndex, iOverlay))
+		{
+			dirItem.m_iIconIndex = iIconIndex;
+			dirItem.m_iOvelayIndex = iOverlay;
+			dirItem.m_bIconImageSet = true;
+		}
+		//2021.11.03 Add *************************************************************
 	}
 	else
 	{

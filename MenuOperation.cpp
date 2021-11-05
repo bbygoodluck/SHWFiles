@@ -219,6 +219,9 @@ void CMenuOperation::DoFileOperation(FILE_OPERATION fop, bool IsUseClipboard)
 		theClipboard->GetData(lstSrc);
 	}
 
+	if(lstSrc.size() == 0)
+		return;
+
 	FileOperationDlg dlgFileOP(_gMainFrame);
 	dlgFileOP.SetOperationItems(lstSrc, strTargetPath, fop);
 	dlgFileOP.ShowModal();

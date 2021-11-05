@@ -35,7 +35,7 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 
 	bool IsCut = (m_fop == FILE_OP_CUT ? true : false);
 
-	if (!CLocalFileSystem::IsWritable(strSrc, (IsCut ? FILE_SHARE_DELETE : FILE_SHARE_READ)))
+	if (!CLocalFileSystem::IsWritable(strSrc, (IsCut ? 0 : FILE_SHARE_READ | FILE_SHARE_WRITE)))//(IsCut ? FILE_SHARE_DELETE : FILE_SHARE_READ)))
 	{
 		m_strMsg = wxString::Format(theMsgManager->GetMessage(wxT("MSG_DLG_COPY_MOVE_USE_ANOTHER_PG")), strSrc);
 		m_bOperationContinue = false;
@@ -45,7 +45,7 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 
 	if(IsOverwrite)
 	{
-		if (!CLocalFileSystem::IsWritable(strTgt, FILE_SHARE_WRITE))
+		if (!CLocalFileSystem::IsWritable(strTgt, 0))//FILE_SHARE_WRITE))
 		{
 			m_strMsg = wxString::Format(theMsgManager->GetMessage(wxT("MSG_DLG_COPY_MOVE_USE_ANOTHER_PG")), strTgt);
 			m_bOperationContinue = false;
@@ -53,27 +53,28 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 		}
 	}
 
+	unsigned long long ulReadSize = 0;
+
 	wxFile fileIn(strSrc, wxFile::read);
 
 	wxStructStat fbuf;
 	if (wxStat(strSrc, &fbuf) != 0)
 	{
-		fileIn.Close();
+		m_bOperationContinue = false;
 		return;
 	}
 
 	wxFile fileOut;
 	if (!fileOut.Create(strTgt, IsOverwrite, fbuf.st_mode & 0777))
 	{
-		fileOut.Close();
+		fileIn.Close();
+		m_bOperationContinue = false;
 		return;
 	}
 
-	unsigned long long ulReadSize = 0;
-	char buf[600 * 1024];
-	wxZeroMemory(buf);
-
+	char buf[10 * 64 * 1024] = {0x00, };
 	bool bReturn = false;
+
 	while(1)
 	{
 		if (theFileOPCheck->IsAllCancel())
@@ -109,6 +110,7 @@ void CFileOperationThreadBase::DoOperation(const wxString& strSrc, const wxStrin
 	if (theFileOPCheck->IsAllCancel())
 	{
 		wxRemoveFile(strTgt);
+		m_bOperationContinue = false;
 		return;
 	}
 

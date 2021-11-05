@@ -1852,26 +1852,21 @@ void CListView::SetItemImage(int iItemIndex)
 {
 	wxVector<CDirData>::iterator iter = m_itemList.begin() + iItemIndex;
 	bool isDrive = iter->IsDrive();
-	if(isDrive)
+	//드라이브 || 이미지정보가 있음
+	if(isDrive || iter->m_bIconImageSet)
 		return;
 
 #ifdef __WXMSW__
 	wxString strFullPath = iter->GetFullPath();
 
-	SHFILEINFO sfi;
-	wxZeroMemory(sfi);
+	int iIconIndex = 0;
+	int iOverlay = 0;
 
-	DWORD dwNum = GetFileAttributes(strFullPath);
-	SHGetFileInfo(strFullPath, dwNum, &sfi, sizeof(sfi), IMAGELIST_FLAG);
-
-	int iIconIndex = sfi.iIcon & 0x00FFFFFF;
-	int iOverlay = (sfi.iIcon >> 24) - 1;
+	theCommonUtil->GetIconIndex(strFullPath, iIconIndex, iOverlay);
 
 	iter->m_iIconIndex = iIconIndex;
 	iter->m_iOvelayIndex = iOverlay;
 	iter->m_bIconImageSet = true;
-
-	DestroyIcon(sfi.hIcon);
 #else
 #endif
 }
@@ -2092,23 +2087,33 @@ void CListView::OnEnterTextCtrl(wxCommandEvent& event)
 
 	wxString strOldPathName = MakeFullPathName(m_strItemToRename);
 	wxString strNewPathName = MakeFullPathName(strNewRename);
-#if !defined(__WXMSW__)
-	bool bExist = false;
-	GetItemExist(strNewRename, bExist);
-	if (bExist)
-	{
-		wxString strMsg = strNewPathName + theMsgManager->GetMessage(wxT("MSG_DLG_ADD_DIR_EXIST"));
-		wxMessageBox(strMsg, PROGRAM_FULL_NAME, wxOK | wxICON_INFORMATION);
-		return;
-	}
-#endif
-	if(!theCommonUtil->IsCreatableDirOrFileName(strNewRename))
-	{
-		DoRenameOn(strNewRename);
-		return;
-	}
 
-	DoRenameFromMenu(strOldPathName, strNewPathName);
+	if(CLocalFileSystem::IsWritable(strOldPathName, 0 , false))
+	{
+		bool bExist = false;
+		GetItemExist(strNewRename, bExist);
+		if (bExist)
+		{
+			wxString strMsg = strNewPathName + theMsgManager->GetMessage(wxT("MSG_DLG_ADD_DIR_EXIST"));
+			wxMessageBox(strMsg, PROGRAM_FULL_NAME, wxOK | wxICON_INFORMATION);
+			return;
+		}
+
+		if(!theCommonUtil->IsCreatableDirOrFileName(strNewRename))
+		{
+			DoRenameOn(strNewRename);
+			return;
+		}
+
+		DoRenameFromMenu(strOldPathName, strNewPathName);
+	}
+	else
+	{
+		wxString strUseAnotherPG(theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_USE_ANOTHER_PG")));
+		wxString strMsg = strOldPathName + strUseAnotherPG;
+
+		wxMessageBox(strMsg, PROGRAM_FULL_NAME, wxICON_ERROR | wxOK);
+	}
 
 	m_pTxtCtrlForRename->SetValue(wxT(""));
 	m_pTxtCtrlForRename->Show(false);
@@ -2170,7 +2175,12 @@ void CListView::DoRenameFromMenuPrepare()
 
 void CListView::DoRenameFromMenu(const wxString& strOldPathName, const wxString& strNewPathName)
 {
-	wxRename(strOldPathName, strNewPathName);
+	int iResult = wxRename(strOldPathName, strNewPathName);
+	if(iResult != 0)
+	{
+		wxString strMsg = wxT("Could not rename ") + strOldPathName + wxT(" to ") + strNewPathName;
+		wxMessageBox(strMsg, PROGRAM_FULL_NAME, wxICON_ERROR | wxOK);
+	}
 }
 
 void CListView::OnMouseLBottonDown(wxMouseEvent& event)

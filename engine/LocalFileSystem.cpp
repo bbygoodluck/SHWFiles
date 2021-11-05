@@ -197,40 +197,39 @@ bool CLocalFileSystem::GetAttributeInfo(const wxString& strName, bool& isDir, un
 	return true;
 }
 
-//bool CLocalFileSystem::IsWritable(const wxString& strPath, int mode)
-bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwAccess, bool IsWatcher)
+bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwShareMode, bool IsWatcher)
 {
-	bool IsFileExist = wxFileExists(strPath);
-	if (!IsFileExist)
-		return true;
-
-//	tstring _strFileName = CONVSTR(strPath);
-
-//	wxString _strFileName(strPath);
-//	std::ifstream ifs(_strFileName.char_str());
-//	if (ifs.is_open())
+#ifdef __WXMSW__
+	DWORD dwAttr = GetFileAttributes(strPath);
+	DWORD dwDesiredAccess = GENERIC_READ;
+	DWORD dwFlagsAndAttr = 0;
+	if(dwAttr == FILE_ATTRIBUTE_DIRECTORY)
+	{
+		dwDesiredAccess = FILE_GENERIC_READ;
+		dwFlagsAndAttr = FILE_FLAG_BACKUP_SEMANTICS;
+//		return wxDirExists(strPath);
+	}
+//	bool IsFileExist = wxFileExists(strPath);
+//	if (!IsFileExist)
 //		return true;
 
-//	return false;
-
-#ifdef __WXMSW__
-	DWORD dwAttribute = GetFileAttributes(strPath);
-	if(dwAttribute == (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_ARCHIVE))
+	if(dwAttr == (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_ARCHIVE))
 		return true;
 
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 
     hFile = CreateFile(strPath,
-					   GENERIC_READ | GENERIC_WRITE,
-                       dwAccess,
+					   dwDesiredAccess,
+                       dwShareMode,
                        NULL,
                        OPEN_EXISTING,
-                       0,
+                       dwFlagsAndAttr,
                        NULL);
 
 	DWORD dwErr = GetLastError();
     if (hFile == INVALID_HANDLE_VALUE)
 	{
+		CloseHandle(hFile);
 		if(IsWatcher)
 		{
 			dwErr = GetLastError();
@@ -243,24 +242,6 @@ bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwAccess, bool 
 
     CloseHandle(hFile);
     return true;
-/*
-	DWORD dwDesired = mode == ACCESS_FILE_READ ? GENERIC_READ : GENERIC_WRITE;
-	DWORD dwCreate = OPEN_EXISTING;
-	if (mode == ACCESS_FILE_WRITE)
-	{
-		dwCreate = CREATE_NEW;
-		if(IsFileExist) dwCreate |= OPEN_EXISTING;
-	}
-
-	DWORD dwShared = mode == ACCESS_FILE_READ ? FILE_SHARE_READ : FILE_SHARE_WRITE;
-
-	HANDLE hFile = CreateFile(strPath, dwDesired, dwShared, NULL, dwCreate, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return false;
-
-	CloseHandle(hFile);
-	return true;
-*/
 #else
 	if (mode == ACCESS_FILE_READ)
 		return false;
@@ -273,27 +254,6 @@ bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwAccess, bool 
 
 	return false;
 #endif
-/*
-#ifdef __WXMSW__
-	HANDLE hFile = INVALID_HANDLE_VALUE;
-
-    hFile = CreateFile(strPath,
-					   GENERIC_READ | GENERIC_WRITE,
-                       mode,
-                       NULL,
-                       OPEN_EXISTING,
-                       0,
-                       NULL);
-
-    if (hFile == INVALID_HANDLE_VALUE)
-		return false;
-
-    CloseHandle(hFile);
-    return true;
-#else
-	wxIsWritable(strFile);
-#endif
-*/
 }
 
 bool CLocalFileSystem::RecursiveDelete(const wxString& path, wxWindow* parent, bool bGoTrash, int& iRet)
