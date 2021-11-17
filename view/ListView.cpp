@@ -453,6 +453,7 @@ void CListView::ProcessKeyEvent(const int nKeyCode)
 
 		case WXK_RETURN:
 		{
+			InitKeyInputTooltip();
 			if (!PressEnterKey())
 				return;
 		}
@@ -2044,11 +2045,7 @@ wxVector<CDirData>::iterator CListView::GetItemExist(const wxString& strName, bo
 		wxString strSrc(strName);
 		strSrc = strSrc.Trim();
 
-#ifdef __WXMSW__
-		return (strSrc.CmpNoCase(strTgt) == 0);
-#else
 		return (strSrc.Cmp(strTgt) == 0);
-#endif
 	});
 
 	if (it != m_itemList.end())

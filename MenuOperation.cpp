@@ -955,6 +955,8 @@ void CMenuOperation::SetAppActivateOrNot(bool bActivate)
 		return;
 	}
 
-	CTabManager* pActiveTab = theSplitterManager->SetActivateTabWhenActivateApp();
-	pActiveTab->GetActiveViewPanel()->SetActivateView();
+	theSplitterManager->SetActivateTabWhenActivateApp();
+
+//	CTabManager* pActiveTab = theSplitterManager->SetActivateTabWhenActivateApp();
+//	pActiveTab->GetActiveViewPanel()->SetActivateView();
 }

@@ -1,6 +1,24 @@
-# 프로그램 정리
+# Change Log
 
 [toc]
+
+## ● 2021.11.16
+
+> 파일명 변경 체크 루틴 하나로 통일
+>
+> ```c++
+> //기존 처리방식
+> #ifdef __WXMSW__
+> 	return strNew.CmpNoCase(strOld);
+> #else
+> 	return strNew.Cmp(strOld);
+> #endif
+> 
+> //To-be
+> 	return strNew.Cmp(strOld);
+> ```
+
+
 
 ## ● How to check if a file is already open by another process(Windows)
 
@@ -35,90 +53,47 @@ MS 문서([http://msdn.microsoft.com/en-us/library/windows/desktop/aa363858%28v=
 > 그럴경우 디렉토리 內파일이 오픈되어 있음을 체크하기 위해서 CreateFile 함수를 사용하여 처리 할수 있다.
 
 ```c++
-bool CLocalFileSystem::IsWritable(const wxString& strPath, DWORD dwShareMode, bool IsWatcher)
+DWORD dwAttr = GetFileAttributes(strPath);
+DWORD dwDesiredAccess = GENERIC_READ;
+DWORD dwFlagsAndAttr = 0;
+if(dwAttr == FILE_ATTRIBUTE_DIRECTORY) //디렉토리 체크시 필요한 항목
 {
-	DWORD dwAttr = GetFileAttributes(strPath);
-	DWORD dwDesiredAccess = GENERIC_READ;
-	DWORD dwFlagsAndAttr = 0;
-	if(dwAttr == FILE_ATTRIBUTE_DIRECTORY) //디렉토리 체크시 필요한 항목
-	{
-		dwDesiredAccess = FILE_GENERIC_READ;
-		dwFlagsAndAttr = FILE_FLAG_BACKUP_SEMANTICS;
-	}
-
-	if(dwAttr == (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_ARCHIVE))
-		return true;
-
-	HANDLE hFile = INVALID_HANDLE_VALUE;
-
-    hFile = CreateFile(strPath,
-					   dwDesiredAccess,
-                       dwShareMode,
-                       NULL,
-                       OPEN_EXISTING,
-                       dwFlagsAndAttr,
-                       NULL);
-
-	DWORD dwErr = GetLastError();
-    if (hFile == INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(hFile);
-		if(IsWatcher)
-		{
-			dwErr = GetLastError();
-			if(dwErr == 0x0020) //다른 프로세스에서 이 파일을 사용하고 있기 때문에 이 파일을 액세스할 수 없습니다.(잘라내기가 아닌경우 체크)
-				return true;
-		}
-
-		return false;
-	}
-
-    CloseHandle(hFile);
-    return true;
+	dwDesiredAccess = FILE_GENERIC_READ;
+	dwFlagsAndAttr = FILE_FLAG_BACKUP_SEMANTICS;
 }
+
+if(dwAttr == (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_ARCHIVE))
+	return true;
+
+HANDLE hFile = INVALID_HANDLE_VALUE;
+
+hFile = CreateFile(strPath,
+				   dwDesiredAccess,
+                   dwShareMode,
+                   NULL,
+                   OPEN_EXISTING,
+                   dwFlagsAndAttr,
+                   NULL);
+
+DWORD dwErr = GetLastError();
+if (hFile == INVALID_HANDLE_VALUE)
+{
+	CloseHandle(hFile);
+	if(IsWatcher)
+	{
+		dwErr = GetLastError();
+		if(dwErr == 0x0020) //다른 프로세스에서 이 파일을 사용하고 있기 때문에 이 파일을 액세스할 수 없습니다.(잘라내기가 아닌경우 체크)
+			return true;
+	}
+
+	return false;
+}
+
+CloseHandle(hFile);
+return true;
 ```
 
 
-
-
-## ● wxWidgets gcc Compile
-
-### 1. Release
-
-- 64bit
-
-  > mingw32-make -j8 -f makefile.gcc SHARED=1 UNICODE=1 CFG=x64 CXXFLAGS="-std=c++20" BUILD=release clean
-  > mingw32-make -j8 -f makefile.gcc setup_h SHARED=1 UNICODE=1 CFG=x64 CXXFLAGS="-std=c++20" BUILD=release
-  > open file: \path\to\wxwidgets\lib\gcc_dllx64\mswu\wx\setup.h and ensure that wxUSE_GRAPHICS_CONTEXT is set to 1
-  >
-  > ```c++
-  > #define wxUSE_GRAPHICS_CONTEXT 1
-  > ```
-  >
-  >
-  > mingw32-make -j8 -f makefile.gcc SHARED=1 UNICODE=1 CFG=x64 CXXFLAGS="-std=c++20" BUILD=release
-
-- 32bit
-
-  > CFG=x64 를 CFG=x86로 변경(그외는 64bit와 동일함)
-
-### 2. Debug
-
-- 64bit
-
-  > mingw32-make -j8 -f makefile.gcc SHARED=1 UNICODE=1 CFG=x64 CXXFLAGS="-std=c++20" BUILD=debug clean
-  > mingw32-make -j8 -f makefile.gcc setup_h SHARED=1 UNICODE=1 CFG=x64 CXXFLAGS="-std=c++20" BUILD=debug
-  > open file: \path\to\wxwidgets\lib\gcc_dllx64\mswud\wx\setup.h and ensure that wxUSE_GRAPHICS_CONTEXT is set to 1
-  >
-  > ```c++
-  > #define wxUSE_GRAPHICS_CONTEXT 1
-  > ```
-  >
-  > mingw32-make -j8 -f makefile.gcc SHARED=1 UNICODE=1 CFG=x64 CXXFLAGS="-std=c++20" BUILD=debug
-
-- 32bit
-
-  > CFG=x64 를 CFG=x86로 변경(그외는 64bit와 동일함)
 
 ## ● C++ ImageList(wxWigets)
 

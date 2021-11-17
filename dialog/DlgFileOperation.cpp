@@ -250,7 +250,7 @@ void FileOperationDlg::Init()
 	}
 
 	m_progressTotal->SetRange(m_iTotalCount);
-	wxString strCpCountInfo = wxString::Format(wxT("(%d/ %d)"), m_iProgressTotal, m_iTotalCount);
+	wxString strCpCountInfo = wxString::Format(wxT("(%d / %d)"), m_iProgressTotal, m_iTotalCount);
 	m_staticTotal->SetLabelText(strCpCountInfo);
 
 	m_staticTarget->SetLabelText(m_strTarget);

@@ -39,6 +39,9 @@ private:
 
 	void OnClose(wxCloseEvent& event);
 	void OnSize(wxSizeEvent& event);
+	void OnMaximized(wxMaximizeEvent& event);
+	void OnIconized(wxIconizeEvent& event);
+
 	wxDECLARE_EVENT_TABLE();
 };
 

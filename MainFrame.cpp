@@ -11,6 +11,8 @@
 wxBEGIN_EVENT_TABLE(CMainFrame, wxFrame)
 	EVT_SIZE(CMainFrame::OnSize)
 	EVT_CLOSE(CMainFrame::OnClose)
+	EVT_MAXIMIZE(CMainFrame::OnMaximized)
+	EVT_ICONIZE(CMainFrame::OnIconized)
 wxEND_EVENT_TABLE()
 
 CMainFrame::CMainFrame(const wxString& strTitle)
@@ -172,6 +174,23 @@ void CMainFrame::CreateToolBar()
 
 	m_pSHFEventHandler->SetBookmarkDropdown();
 	m_pSHFEventHandler->RegisterToolbarEvent();
+}
+
+void CMainFrame::OnMaximized(wxMaximizeEvent& event)
+{
+	m_bMaximize = true;
+//	theJsonConfig->SetChangeGlobalVal(wxT("Maximized"), 1);
+}
+
+void CMainFrame::OnIconized(wxIconizeEvent& event)
+{
+	if(event.IsIconized())
+	{
+		theMenuOperation->SetAppActivateOrNot();
+		return;
+	}
+
+	theMenuOperation->SetAppActivateOrNot(true);
 }
 
 #ifdef __WXMSW__
