@@ -49,7 +49,7 @@ LRESULT CALLBACK HookWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		{
 			LRESULT lResult = 0;
 			g_IContext3->HandleMenuMsg2(message, wParam, lParam, &lResult);
-			return (lResult);
+		//	return (lResult);
 		}
 
 		return (message == WM_INITMENUPOPUP ? 0 : TRUE); // inform caller that we handled WM_INITPOPUPMENU by ourself
@@ -260,6 +260,7 @@ void CMSWContextMenuHandler::ShowContextMenu(wxWindow* pWnd, const wxPoint& pt)
 	else
 		OldWndProc = NULL;
 
+	//메뉴표시
 	pWnd->PopupMenu(m_pMenu, pt.x, pt.y);
 
 

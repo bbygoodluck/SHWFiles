@@ -62,5 +62,5 @@ SHWFiles의 SHW는 아이들(첫째와 둘째) 이름의 이니셜을 따서 만
 
   > CFG=x64 를 CFG=x86로 변경(그외는 64bit와 동일함)
 
-## ● [ChangeLog](Doc/CHANGELOG.MD)
+## ● [ChangeLog](CHANGELOG/CHANGELOG.md)
 

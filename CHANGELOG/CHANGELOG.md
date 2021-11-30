@@ -2,6 +2,29 @@
 
 [toc]
 
+## ● 2021.11.29(Ver 1.1.0)
+
+> 파일복사/이동/삭제 처리를 SHFileOperation으로 변경
+
+
+
+## ● 2021.11.27
+
+> ListView - OnChar함수 수정
+>
+>    ``` markdown
+>    특수키 입력시 해당이벤트 skip 처리
+>    ```
+
+
+
+## ● 2021.11.18
+
+> ContextMenu(MSWContextMenuHandler) HookWndProc 함수 수정
+> WM_INITMENUPOPUP 함수 수정 - return (lResult) 주석처리함
+
+
+
 ## ● 2021.11.16
 
 > 파일명 변경 체크 루틴 하나로 통일

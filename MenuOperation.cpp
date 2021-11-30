@@ -222,10 +222,20 @@ void CMenuOperation::DoFileOperation(FILE_OPERATION fop, bool IsUseClipboard)
 	if(lstSrc.size() == 0)
 		return;
 
+#ifdef __WXMSW__
+	bool IsCopy = fop == FILE_OP_COPY ? true : false;
+	wxString strSrcPath = theClipboard->GetSrcPath();
+	bool bResult = strSrcPath.Cmp(strTargetPath) == 0 ? CLocalFileSystem::RecursiveCopyOrMoveSameTarget(lstSrc, strTargetPath, _gMainFrame, IsCopy)
+												      : CLocalFileSystem::RecursiveCopyMove(lstSrc, strTargetPath, _gMainFrame, IsCopy);
+	if(!bResult)
+		return;
+#else
 	FileOperationDlg dlgFileOP(_gMainFrame);
 	dlgFileOP.SetOperationItems(lstSrc, strTargetPath, fop);
 	dlgFileOP.ShowModal();
 	dlgFileOP.Destroy();
+
+#endif // __WXMSW__
 
 	theSplitterManager->GetActiveTab()->GetActiveViewPanel()->ClearSelectedInfoOfView();
 }
@@ -328,7 +338,7 @@ void CMenuOperation::DoDeleteTrash(_MENU_EVENT_TYPE mType)
 	int iRet = 0;
 	if(!CLocalFileSystem::RecursiveDelete(lstDatas, _gMainFrame, bTrash, iRet))
 	{
-		wxMessageBox(wxT("Failed to file delete"), PROGRAM_FULL_NAME, wxICON_ERROR | wxOK);
+//		wxMessageBox(wxT("Failed to file delete"), PROGRAM_FULL_NAME, wxICON_ERROR | wxOK);
 		return;
 	}
 
@@ -386,6 +396,11 @@ void CMenuOperation::SetFileOperationClipboardData(bool IsCut)
 		theClipboard->SetFileOperation(IsCut ? _MENU_EDIT_MOVE_CLIPBOARD : _MENU_EDIT_COPY_CLIPBOARD);
 		theClipboard->AddData(lstSrc);
 		theClipboard->CopyToClipboard();
+
+#ifdef __WXMSW__
+		wxString strCurrentPath(theSplitterManager->GetActiveTab()->GetActiveViewPanel()->GetCurrentViewPath());
+		theClipboard->SetSrcPath(strCurrentPath);
+#endif // __WXMSW__
 	}
 }
 

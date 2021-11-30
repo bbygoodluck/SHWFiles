@@ -18,7 +18,7 @@ public:
 	void DoSplitter(const wxSize& _size = wxSize(0,0));
 
 	CTabManager* SetActivateTabWhenActivateApp();
-	CTabManager* GetActiveTab() { return m_pActiveTab; }
+	CTabManager* GetActiveTab() { return _gTabManager;/* m_pActiveTab; */}
 	CTabManager* GetAnotherTab();
 
 	CTabManager* GetLeftTab()

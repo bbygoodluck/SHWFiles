@@ -23,12 +23,18 @@ public:
 	virtual void GetData(std::list<wxString>& lstDatas) wxOVERRIDE;
 	void Clear();
 
+	void SetSrcPath(const wxString& strSrcPath) {
+		m_strSrcPath = strSrcPath;
+	}
+
+	wxString GetSrcPath() { return m_strSrcPath; }
 public:
 	static CMSWCopyMoveClipboard* Get();
 
 private:
 	static std::unique_ptr<CMSWCopyMoveClipboard> m_pInstance;
-//	wxArrayString m_aDatas;
 	std::list<wxString> m_aDatas;
+
+	wxString m_strSrcPath = wxT("");
 };
 #endif

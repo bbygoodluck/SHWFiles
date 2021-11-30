@@ -109,6 +109,7 @@ private:
 	void DoSort(CTabManager* pTabManager);
 	void DoFavorite(_MENU_EVENT_TYPE mType);
 	void DoDecompress(_MENU_EVENT_TYPE _menuType);
+
 private:
 	static std::unique_ptr<CMenuOperation> m_pInstance;
 	std::unordered_map< int, std::function<void()> > m_menuFnPtrMap;

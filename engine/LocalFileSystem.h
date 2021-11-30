@@ -27,6 +27,10 @@ public:
 	static bool IsWritable(const wxString& strPath, DWORD dwShareMode = 0, bool IsWatcher = false);
 	static bool RecursiveDelete(const wxString& path, wxWindow* parent, bool bGoTrash, int& iRet);
 	static bool RecursiveDelete(const std::list<wxString>& dirsToVisit, wxWindow* parent, bool bGoTrash, int& iRet);
+	static bool RecursiveCopyMove(const std::list<wxString>& dirsToVisit, const wxString& strTargetPath, wxWindow* parent, bool IsCopy);
+#ifdef __WXMSW__
+	static bool RecursiveCopyOrMoveSameTarget(std::list<wxString>& dirsToVisit, const wxString& strDest, wxWindow* parent, bool IsCopy);
+#endif
 	static enum local_filetype GetFileType(const wxString& path);
 
 	static bool IsCheckedFileOpen(const wxString& strFullPathName);

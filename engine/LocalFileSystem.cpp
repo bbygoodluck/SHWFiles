@@ -307,20 +307,18 @@ bool CLocalFileSystem::RecursiveDelete(const std::list<wxString>& dirsToVisit, w
 		*p = 0;
 
 		FILEOP_FLAGS flag = FOF_NOCONFIRMATION;
-	//	if (theJsonConfig->GetCopyMoveUseWindowShell() != 1)
-	//		flag = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
 		SHFILEOPSTRUCT fileop;
 		wxZeroMemory(fileop);
+
+		fileop.hwnd = parent ? (HWND)parent->GetHandle() : 0;
 		fileop.wFunc = FO_DELETE;
 		fileop.pFrom = pBuffer;
-		fileop.pTo = NULL;
-		fileop.fAnyOperationsAborted = false;
-		fileop.hNameMappings = NULL;
-		fileop.lpszProgressTitle = NULL;
-		fileop.fFlags = flag;
-		if (bGoTrash)
-			fileop.fFlags |= FOF_ALLOWUNDO;
+
+		if (parent)
+			fileop.fFlags = bGoTrash ? FOF_ALLOWUNDO : 0;
+		else
+			fileop.fFlags = FOF_NOCONFIRMATION;
 
 		int ret = SHFileOperation(&fileop);
 		if (ret != 0)
@@ -328,7 +326,7 @@ bool CLocalFileSystem::RecursiveDelete(const std::list<wxString>& dirsToVisit, w
 			// SHFileOperation may return non-Win32 error codes, so the error
 			// message can be incorrect
 			wxLogApiError(wxT("SHFileOperation"), ret);
-			return false;
+			bRet = false;
 		}
 	}
 
@@ -412,6 +410,110 @@ bool CLocalFileSystem::RecursiveDelete(const std::list<wxString>& dirsToVisit, w
 #else
 #endif
 }
+
+bool CLocalFileSystem::RecursiveCopyMove(const std::list<wxString>& dirsToVisit, const wxString& strTargetPath, wxWindow* parent, bool IsCopy)
+{
+#ifdef __WXMSW__
+	//Reference filezilla
+	int len = 1;
+
+	for (auto const& dirItem : dirsToVisit)
+		len += dirItem.size() + 1;
+
+	wxChar* from = new wxChar[len];
+	wxChar* p = from;
+
+	for (auto dir : dirsToVisit)
+	{
+		_tcscpy(p, dir);
+		p += dir.size() + 1;
+	}
+
+	*p = 0; // End of list
+
+	wxChar* to = new wxChar[strTargetPath.Len() + 2];
+	wxStrcpy(to, strTargetPath);
+	to[strTargetPath.Len() + 1] = 0; // End of list
+
+	SHFILEOPSTRUCT op;
+	wxZeroMemory(op);
+
+	op.hwnd = parent ? (HWND)parent->GetHandle() : 0;
+	op.pFrom = from;
+	op.pTo = to;
+	op.wFunc = IsCopy ? FO_COPY : FO_MOVE;
+
+	int iRet = SHFileOperation(&op);
+
+	delete [] to;
+	delete [] from;
+
+	if(iRet != 0)
+		return false;
+
+	return true;
+
+#else
+
+#endif
+}
+
+#ifdef __WXMSW__
+bool CLocalFileSystem::RecursiveCopyOrMoveSameTarget(std::list<wxString>& dirsToVisit, const wxString& strDest, wxWindow* parent, bool IsCopy)
+{
+	wxString strName(wxT(""));
+	wxString strFullPath(wxT(""));
+	bool bReturn = true;
+
+	IFileOperation* pfo;
+	HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	if (FAILED(hr))
+		return false;
+
+	hr = ::CoCreateInstance(__uuidof(FileOperation), NULL, CLSCTX_ALL, IID_PPV_ARGS(&pfo));
+	if (FAILED(hr))
+		return false;
+
+	IShellItem* psiTo = nullptr;
+	hr = SHCreateItemFromParsingName(CONVSTR(strDest), NULL, IID_PPV_ARGS(&psiTo));
+
+	if(FAILED(hr))
+		return false;
+
+	for (auto strItem : dirsToVisit)
+	{
+		IShellItem* psiFrom = nullptr;
+		hr = SHCreateItemFromParsingName(CONVSTR(strItem), NULL, IID_PPV_ARGS(&psiFrom));
+
+		if(SUCCEEDED(hr))
+		{
+			strName = theCommonUtil->GetFileName(strItem);
+			if(theCommonUtil->Compare(strDest.Right(1), SLASH) == 0)
+				strFullPath = strDest + strName;
+			else
+				strFullPath = strDest + SLASH + strName;
+
+			if (strFullPath.CmpNoCase(strItem) == 0)
+				strName  = theCommonUtil->ChangeName(strFullPath);
+
+			hr = pfo->CopyItem(psiFrom, psiTo, strName, nullptr);
+			if(SUCCEEDED(hr))
+				hr = pfo->PerformOperations();
+
+			psiFrom->Release();
+		}
+		else
+		{
+			bReturn = false;
+			break;
+		}
+	}
+
+	psiTo->Release();
+	CoUninitialize();
+	return bReturn;
+}
+#endif
 
 enum CLocalFileSystem::local_filetype CLocalFileSystem::GetFileType(const wxString& path)
 {

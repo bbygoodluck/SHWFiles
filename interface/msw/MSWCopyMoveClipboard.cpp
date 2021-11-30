@@ -25,6 +25,7 @@ CMSWCopyMoveClipboard* CMSWCopyMoveClipboard::Get()
 void CMSWCopyMoveClipboard::Clear()
 {
 	m_aDatas.clear();
+	m_strSrcPath = wxT("");
 }
 
 void CMSWCopyMoveClipboard::AddData(const wxString& strData)
@@ -45,7 +46,7 @@ void CMSWCopyMoveClipboard::CopyToClipboard()
 		wxFileDataObject* pFileDataObject = new wxFileDataObject();
 		for (auto item : m_aDatas)
 			pFileDataObject->AddFile(item);
-		
+
 		wxTheClipboard->AddData(pFileDataObject);
 		wxTheClipboard->Close();
 	}

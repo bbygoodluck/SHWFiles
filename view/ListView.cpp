@@ -191,7 +191,8 @@ void CListView::OnCharHook(wxKeyEvent& event)
 void CListView::OnChar(wxKeyEvent& event)
 {
 	int iKeyCode = event.GetKeyCode();
-	if (m_strKeyInput.IsEmpty() && theSkipKeyMap->IsExistSkipKey(iKeyCode))
+//	if (m_strKeyInput.IsEmpty() && theSkipKeyMap->IsExistSkipKey(iKeyCode))
+	if (theSkipKeyMap->IsExistSkipKey(iKeyCode))
 	{
 		event.Skip();
 		return;
@@ -2544,47 +2545,55 @@ bool CListView::GetTrashOrDeleteData(std::list<wxString>& lstDatas, bool bTrash)
 
 	bool bGoTrash = bTrash;
 	int iRetValue = 0;
-	bool bOpenCheck = false;
+	bool bWritable = true;
 
 	if (iSelectedItems == 0)
 	{
 		CDirData selItem = m_itemList.at(m_nCurrentItemIndex);
+		wxString strItem = selItem.GetFullPath();
 		if (theCommonUtil->Compare(selItem.GetName(), wxT("..")) == 0)
 			return false;
 
 		if (selItem.IsFile())
-			bOpenCheck = CLocalFileSystem::IsCheckedFileOpen(selItem.GetFullPath());
+			bWritable = CLocalFileSystem::IsWritable(strItem, 0);
+		//	bOpenCheck = CLocalFileSystem::IsCheckedFileOpen(selItem.GetFullPath());
 
-		strMsg = selItem.GetFullPath();
+		strMsg = strItem;
 
-		if (bOpenCheck)
+		if (!bWritable)
 		{
 			wxMessageBox(strMsg + wxT(" is opened!. you can't delete operation!"), wxT("Delete...."), wxICON_ERROR, this);
 			return false;
 		}
 
-		strMsg += wxT("\n");
-		strMsg += bGoTrash ? strGoTrash : strDelComplete;
-
 		wxString strDelItem(selItem.GetFullPath());
 		lstDatas.push_back(strDelItem);
 
-		iRetValue = wxMessageBox(strMsg, wxT("Delete...."), wxYES_NO | wxICON_EXCLAMATION, this);
+		if(bGoTrash)
+		{
+			strMsg += wxT("\n");
+			strMsg += bGoTrash ? strGoTrash : strDelComplete;
+			iRetValue = wxMessageBox(strMsg, wxT("Delete...."), wxYES_NO | wxICON_EXCLAMATION, this);
+		}
 	}
 	else
 	{
 		int iDelItemCounts = 0;
 
 		std::unordered_map<int, SELITEM_INFO>::const_iterator iter = m_hashSelectedItem.begin();
-		strMsg = wxT("");
-		strMsg += wxString::Format(wxT("%d "), iSelectedItems);
-		strMsg += theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_SELITEM"));
-		strMsg += wxT("\n\n");
+
+		if(bGoTrash)
+		{
+			strMsg = wxT("");
+			strMsg += wxString::Format(wxT("%d "), iSelectedItems);
+			strMsg += theMsgManager->GetMessage(wxT("MSG_DLG_DELETE_SELITEM"));
+			strMsg += wxT("\n\n");
+		}
 
 		wxString strItem(wxT(""));
 		for (iter; iter != m_hashSelectedItem.end(); ++iter)
 		{
-			bOpenCheck = false;
+			bWritable = true;
 
 			SELITEM_INFO _info = iter->second;
 
@@ -2593,8 +2602,8 @@ bool CListView::GetTrashOrDeleteData(std::list<wxString>& lstDatas, bool bTrash)
 
 			if (bFile)
 			{
-				bOpenCheck = CLocalFileSystem::IsCheckedFileOpen(strItem);
-				if (bOpenCheck)
+				bWritable = CLocalFileSystem::IsWritable(strItem, 0);
+				if (!bWritable)
 				{
 					int iRet = wxMessageBox(strItem + wxT(" is opend another program!. this file to be skipped! \n Continue?"), wxT("Delete...."), wxYES_NO | wxICON_ERROR, this);
 					if (iRet == wxYES)
@@ -2610,23 +2619,32 @@ bool CListView::GetTrashOrDeleteData(std::list<wxString>& lstDatas, bool bTrash)
 
 			lstDatas.push_back(strItem);
 			iDelItemCounts++;
-			strMsg += strItem;
-			strMsg += wxT("\n");
+			if(bGoTrash)
+			{
+				strMsg += strItem;
+				strMsg += wxT("\n");
+			}
 		}
 
-		strMsg += wxT("\n");
-		strMsg += bGoTrash ? strGoTrash : strDelComplete;
-		if(iDelItemCounts > 0)
-			iRetValue = wxMessageBox(strMsg, wxT("Delete...."), wxYES_NO | wxICON_EXCLAMATION, this);
+		if(bGoTrash)
+		{
+			strMsg += wxT("\n");
+			strMsg += strGoTrash;
+
+			if(iDelItemCounts > 0)
+				iRetValue = wxMessageBox(strMsg, wxT("Delete...."), wxYES_NO | wxICON_EXCLAMATION, this);
+		}
 	}
 
-	if (iRetValue == wxYES)
+	if(bGoTrash)
 	{
-		if (lstDatas.size() > 0)
+		if( (iRetValue == wxYES) && (lstDatas.size() > 0) )
 			bDel = true;
+
+		return bDel;
 	}
 
-	return bDel;
+	return true;
 }
 
 void CListView::GetCompressedItems(std::vector<wxString>& vecItems, wxString& strCompressedFile)
