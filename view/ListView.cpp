@@ -191,15 +191,19 @@ void CListView::OnCharHook(wxKeyEvent& event)
 void CListView::OnChar(wxKeyEvent& event)
 {
 	int iKeyCode = event.GetKeyCode();
-//	if (m_strKeyInput.IsEmpty() && theSkipKeyMap->IsExistSkipKey(iKeyCode))
-	if (theSkipKeyMap->IsExistSkipKey(iKeyCode))
-	{
-		event.Skip();
-		return;
-	}
 
 	bool bShift = wxIsShiftDown();
 	bool bControl = wxIsCtrlDown();
+	bool bAlt     = wxIsAltDown();
+
+//	if (m_strKeyInput.length() == 0)
+//	{	//처음키를 matching 키로 입력하고자 할때 alt키를 입력하고 처리한다.
+		if(!bAlt && theSkipKeyMap->IsExistSkipKey(iKeyCode))
+		{
+			event.Skip();
+			return;
+		}
+//	}
 
 	if(bControl)
 	{
@@ -299,7 +303,7 @@ void CListView::FindMatchItems()
 	strKeyInput.MakeLower();
 #endif
 
-	wxString strRegEx(wxT("(^") + strKeyInput + wxT(")"));
+	wxString strRegEx(wxT("^") + strKeyInput);
 	wxRegEx _regex(strRegEx);
 
 	wxString strName;
